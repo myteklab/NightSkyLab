@@ -1,9 +1,9 @@
 // Every dialog: the place picker and map, the calendar, the Moon, planets, dark sky, the star
 // party plan, the observing log, the tour builder and the printable chart.
-import * as S from './sky.mjs?v=2';
-import { View, render, skyLimit } from './draw.mjs?v=2';
-import { esc, timeAt, dateWords, clock } from './words.mjs?v=2';
-import { drawPhase } from './moonface.mjs?v=2';
+import * as S from './sky.mjs?v=3';
+import { View, render, skyLimit } from './draw.mjs?v=3';
+import { esc, timeAt, dateWords, clock } from './words.mjs?v=3';
+import { drawPhase } from './moonface.mjs?v=3';
 
 export function initScreens(ctx) {
     const { $ } = ctx;
@@ -20,7 +20,7 @@ export function initScreens(ctx) {
     // ---- place ------------------------------------------------------------------------------
     let cities = null, land = null;
     const search = $('citySearch'), list = $('cityList');
-    async function loadCities() { if (!cities) cities = await import('./data/cities.mjs?v=2'); return cities; }
+    async function loadCities() { if (!cities) cities = await import('./data/cities.mjs?v=3'); return cities; }
     $('placeDialog').addEventListener('close', () => { search.value = ''; list.innerHTML = ''; });
     $('btnPlace').addEventListener('click', () => setTimeout(() => search.focus(), 50));
     search.addEventListener('input', async () => {
@@ -28,11 +28,16 @@ export function initScreens(ctx) {
         list.innerHTML = '';
         if (q.length < 2) return;
         const { CITIES, ZONES } = await loadCities();
-        const hits = [];
+        if (search.value.trim().toLowerCase() !== q) return;   // a later keystroke owns the list now
+        // cities whose name starts with the letters come first, then ones with a later word that does
+        const first = [], later = [];
         for (const c of CITIES) {
             const name = c[0].toLowerCase();
-            if (name.startsWith(q) || name.split(/[\s-]/).some(w => w.startsWith(q))) { hits.push(c); if (hits.length >= 12) break; }
+            if (name.startsWith(q)) first.push(c);
+            else if (name.split(/[\s-]/).some(w => w.startsWith(q))) later.push(c);
+            if (first.length >= 12) break;
         }
+        const hits = first.concat(later).slice(0, 12);
         if (!hits.length) { list.innerHTML = '<li class="muted">Nothing yet. Try the start of the city’s name, or the map.</li>'; return; }
         for (const c of hits) {
             const li = document.createElement('li');
@@ -42,7 +47,7 @@ export function initScreens(ctx) {
             b.addEventListener('click', () => {
                 ctx.setPlace({ name: c[0], country: c[1], lat: c[2] / 10, lon: c[3] / 10, zone: ZONES[c[4]] });
                 $('placeDialog').close();
-                ctx.guide.start();
+                placed();
             });
             li.appendChild(b); list.appendChild(li);
         }
@@ -51,7 +56,7 @@ export function initScreens(ctx) {
     $('btnMap').addEventListener('click', async () => {
         $('mapWrap').hidden = !$('mapWrap').hidden;
         if ($('mapWrap').hidden) return;
-        if (!land) land = await import('./data/land.mjs?v=2');
+        if (!land) land = await import('./data/land.mjs?v=3');
         drawMap();
     });
     function drawMap(mark) {
@@ -80,8 +85,13 @@ export function initScreens(ctx) {
         drawMap({ lat, lon });
         $('mapSay').textContent = `Latitude ${lat}°, longitude ${lon}°, clock of ${best[0]}.`;
         ctx.setPlace({ name: bestD < 1.5 ? best[0] : `Near ${best[0]}`, country: best[1], lat, lon, zone: ZONES[best[4]] });
-        setTimeout(() => { $('placeDialog').close(); ctx.guide.start(); }, 700);
+        setTimeout(() => { $('placeDialog').close(); placed(); }, 700);
     });
+    // the guide starts over only for a student who has not found anything yet
+    function placed() {
+        if (p().found.length) ctx.toast(`This is the sky over ${p().place.name} now.`);
+        else ctx.guide.start();
+    }
 
     // ---- when: date, time, the turn of the year --------------------------------------------
     const wd = $('whenDate'), wt = $('whenTime');
@@ -96,7 +106,7 @@ export function initScreens(ctx) {
     $('whenTonight').addEventListener('click', () => { const lp = S.localParts(new Date(Date.now() - 4 * 3600000), zone()); ctx.setWhen(lp.date, '20:00', false); syncWhen(); });
     function stepMonth(n) {
         monthSteps += 1;
-        ctx.setWhen(S.addMonths(p().when.date, n), '21:00', false);
+        ctx.setWhen(S.addMonths(p().when.date, n), p().when.time, false);
         if (monthSteps >= 6) ctx.addDid('turn-year');
         syncWhen();
     }
@@ -220,7 +230,9 @@ export function initScreens(ctx) {
         const v = p().view.dark;
         $('darkWord').textContent = darkWord(v);
         const n = countStars(v);
-        $('darkCount').textContent = skyLimit(ctx.sunAlt) < 0 ? 'The Sun is up. Come back after dark.' : `${n} star${n === 1 ? '' : 's'} above the horizon at this darkness` + (ctx.compare ? ` (city ${countStars(p().darkSky.city)}, park ${countStars(p().darkSky.park)})` : '');
+        $('darkCount').textContent = skyLimit(ctx.sunAlt) < 0 ? 'The Sun is up. Come back after dark.'
+            : ctx.compare ? `City: ${countStars(p().darkSky.city).toLocaleString('en-US')} stars above the horizon. Park: ${countStars(p().darkSky.park).toLocaleString('en-US')}.`
+                : `${n.toLocaleString('en-US')} star${n === 1 ? '' : 's'} above the horizon at this darkness`;
     }
     slider.addEventListener('input', () => {
         p().view.dark = Number(slider.value) / 10;
@@ -233,6 +245,8 @@ export function initScreens(ctx) {
     slider.addEventListener('change', ctx.markDirty);
     $('darkCompare').addEventListener('change', () => { ctx.compare = $('darkCompare').checked; if (ctx.compare) ctx.addDid('dark-compare'); renderDark(); ctx.draw(); });
     $('darkNote').addEventListener('input', () => { p().darkSky.note = $('darkNote').value.slice(0, 600); ctx.markDirty(); });
+    // the split is for looking while the panel is open; closing it gives the whole sky back
+    $('darkDialog').addEventListener('close', () => { if (ctx.compare) { ctx.compare = false; $('darkCompare').checked = false; ctx.draw(); } });
 
     // ---- star party --------------------------------------------------------------------------
     const BRING = [['red-light', 'a red flashlight'], ['layers', 'warm layers'], ['blanket', 'a chair or blanket'], ['water', 'water'], ['binoculars', 'binoculars, if you have some'], ['chart', 'a printed sky chart'], ['grown-up', 'a grown-up'], ['snack', 'a snack']];

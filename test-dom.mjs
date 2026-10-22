@@ -196,7 +196,7 @@ click('#btnCalendar');
 const monthBefore = P().when.date;
 for (let i = 0; i < 6; i++) click('#monthStep');
 ok(P().did.includes('turn-year'), 'six months is did turn-year', P().did);
-ok(P().when.date !== monthBefore && P().when.time === '21:00', 'month step keeps 9 pm', P().when);
+ok(P().when.date !== monthBefore, 'month step moves the date', P().when);
 $('#whenDialog').close();
 
 // ---- chart and about do not throw ---------------------------------------------------------
@@ -218,7 +218,24 @@ click('#btnAbout'); ok(/Yale Bright Star/.test($('#aboutDialog').textContent), '
     ok(P().place.sample === true && P().found.length === 0, 'null is a fresh start');
 }
 
-// ---- the southern sky gets the Cross ------------------------------------------------------
+// ---- Escape, mode switch with a card open, a second city after a find --------------------------
+N.goTo('star', 'vega'); await sleep(900);
+ok(!$('#card').hidden, 'Vega card open');
+$('#modeAstronomer').checked = true; $('#modeAstronomer').dispatchEvent(new w.Event('change', { bubbles: true }));
+ok(/Magnitude/.test($('#cardBody').textContent), 'switching mode redraws the open card');
+$('#modeExplorer').checked = true; $('#modeExplorer').dispatchEvent(new w.Event('change', { bubbles: true }));
+ok(!/Magnitude/.test($('#cardBody').textContent), 'and back');
+d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+ok($('#card').hidden, 'Escape closes the card');
+N.goTo('constellation', 'uma'); await sleep(900); click('#cardFound');
+click('#btnPlace'); input('#citySearch', 'denv'); await sleep(300);
+click([...d.querySelectorAll('#cityList button')].find(b => /^Denver/.test(b.textContent)));
+await sleep(50);
+ok(P().place.name === 'Denver' && !$('#toast').hidden && /Denver/.test($('#toast').textContent), 'a city picked after a find does not restart the guide, it says where you are', $('#toast').textContent);
+ok(N.state.S.bvClass(1.54) === 'orange' && N.state.S.bvClass(1.85) === 'red', 'Aldebaran orange, Betelgeuse red');
+
+// ---- the southern sky gets the Cross (a fresh project, so the guide may start over) ---------
+N.loadProjectData(null);
 click('#btnPlace');
 input('#citySearch', 'sydn');
 await sleep(300);

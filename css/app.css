@@ -37,16 +37,16 @@ u { text-decoration-color: var(--gold); text-underline-offset: 3px; }
 .guide { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); max-width: min(92vw, 720px); background: rgba(10,14,30,0.82); border: 1px solid rgba(255,214,110,0.45); color: #f3f4fa; padding: 9px 14px; border-radius: 12px; display: flex; gap: 10px; align-items: center; backdrop-filter: blur(4px); }
 .guide[hidden] { display: none; }
 .guide .small { white-space: nowrap; }
-.chips { position: absolute; left: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px; max-width: 60%; }
+.chips { position: absolute; left: 12px; top: 38px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; max-width: 40%; }
 .chip { font-size: 12px; background: rgba(255,214,110,0.16); border: 1px solid rgba(255,214,110,0.5); color: #ffe6a8; border-radius: 12px; padding: 2px 9px; }
 .compass { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 5px; }
 .compass button { width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.25); background: rgba(10,14,30,0.6); color: #e8ecf5; font-weight: 600; }
 .compass button:hover { border-color: var(--gold); }
-.compareLabels { position: absolute; left: 0; right: 0; top: 54px; display: flex; justify-content: space-around; pointer-events: none; }
+.compareLabels { position: absolute; left: 0; right: 0; top: 104px; display: flex; justify-content: space-around; pointer-events: none; }
 .compareLabels span { background: rgba(0,0,0,0.45); padding: 2px 10px; border-radius: 10px; font-size: 13px; }
 .tourBar { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); background: rgba(10,14,30,0.85); border: 1px solid var(--accent); border-radius: 12px; padding: 8px 14px; display: flex; gap: 12px; align-items: center; max-width: 90vw; }
 .tourBar[hidden] { display: none; }
-.toast { position: absolute; left: 50%; bottom: 70px; transform: translateX(-50%); background: rgba(10,14,30,0.9); border: 1px solid var(--gold); color: #fff3d6; padding: 8px 14px; border-radius: 10px; max-width: 80vw; font-size: 14px; }
+.toast { position: absolute; left: 50%; top: 64px; transform: translateX(-50%); background: rgba(10,14,30,0.9); border: 1px solid var(--gold); color: #fff3d6; padding: 8px 14px; border-radius: 10px; max-width: 80vw; font-size: 14px; }
 .toast[hidden] { display: none; }
 .swatch { display: inline-block; width: 16px; height: 16px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); margin: 8px 0; }

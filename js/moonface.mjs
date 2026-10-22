@@ -2,6 +2,8 @@
 // A waxing Moon is lit on the right as seen from the north; the south sees it the other way up.
 export function drawPhase(g, cx, cy, r, phaseAngle, mirror, light = '#f1efe4', dark = '#3a3f52') {
     const k = Math.cos(phaseAngle * Math.PI / 180);
+    // past full the lit side has moved to the left
+    if (((phaseAngle % 360) + 360) % 360 > 180) mirror = !mirror;
     g.save();
     g.translate(cx, cy);
     if (mirror) g.scale(-1, 1);

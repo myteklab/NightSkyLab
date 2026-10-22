@@ -1,6 +1,6 @@
 // The first minute (find the Dipper, drag the pointers to Polaris, turn the night) and the
 // tour player, which is Glassbox rung 1: a list of step cards the sky follows.
-import * as S from './sky.mjs?v=2';
+import * as S from './sky.mjs?v=3';
 
 export function initGuide(ctx) {
     const { $ } = ctx;
@@ -9,6 +9,8 @@ export function initGuide(ctx) {
     let south = false;          // the Southern Cross version of the first minute
     let dragGap = 0, dragDir = null, dragFrom = null;
     let extraButtons = [];
+    let shownAt = 0;           // a second tap right after the guide changes must not hit the new button
+    const tooSoon = () => performance.now() - shownAt < 450;
 
     const pointerStars = () => south ? ['gacrux', 'acrux'] : ['merak', 'dubhe'];
     const targetId = () => south ? 'cru' : 'uma';
@@ -25,14 +27,15 @@ export function initGuide(ctx) {
         extraButtons = [];
         for (const x of extras || []) {
             const b = document.createElement('button');
-            b.type = 'button'; b.className = 'small'; b.textContent = x.label; b.onclick = x.run;
+            b.type = 'button'; b.className = 'small'; b.textContent = x.label; b.onclick = () => { if (!tooSoon()) x.run(); };
             el.insertBefore(b, skip);
             extraButtons.push(b);
         }
         el.hidden = false;
+        shownAt = performance.now();
     }
     function hide() { el.hidden = true; step = 'off'; ctx.guideLines = null; ctx.pointer = null; ctx.draw(); }
-    skip.addEventListener('click', hide);
+    skip.addEventListener('click', () => { if (!tooSoon()) hide(); });
 
     function figureUp() {
         let best = -90;
@@ -64,6 +67,17 @@ export function initGuide(ctx) {
         ctx.pointer = null;
         ctx.view.look(south ? 180 : 0, 25);
         ctx.draw();
+        if (ctx.sunAlt > -6) {
+            step = 'wait';
+            show('The Sun is up at this hour, so the stars are hidden. Slide the time strip into the night.', 'Show me', () => {
+                ctx.strip.value = 108;
+                ctx.strip.dispatchEvent(new Event('input'));
+                ctx.markDirty();
+            });
+            const onDark = () => { if (ctx.sunAlt <= -6) { document.removeEventListener('nightsky:frame', onDark); start(); } };
+            document.addEventListener('nightsky:frame', onDark);
+            return;
+        }
         if (figureUp() < 4) {
             const best = bestStripStep();
             if (best.alt < 4) {
@@ -124,19 +138,19 @@ export function initGuide(ctx) {
     }
     function pointerEnds() {
         const [a, b] = pointerStars().map(S.starIndexById);
-        return { from: ctx.starHor(a), to: ctx.starHor(b) };
+        return { a, b, from: ctx.starHor(a), to: ctx.starHor(b) };
     }
     function claimDrag(x, y) {
         if (step !== 'pointers') return false;
         const P = ctx.view.projector();
-        const { from, to } = pointerEnds();
+        const { a, b, from, to } = pointerEnds();
         const pa = P(from[0], from[1], from[2]), pb = P(to[0], to[1], to[2]);
         if (!pa || !pb) return false;
         if (Math.hypot(pa[0] - x, pa[1] - y) > 28) return false;
         dragGap = Math.hypot(pb[0] - pa[0], pb[1] - pa[1]);
         dragDir = [(pb[0] - pa[0]) / dragGap, (pb[1] - pa[1]) / dragGap];
         dragFrom = pa;
-        ctx.pointer = { from, to, t: 0.001 };
+        ctx.pointer = { a, b, t: 0.001 };
         return true;
     }
     function moveDrag(x, y) {
@@ -151,12 +165,12 @@ export function initGuide(ctx) {
         else { ctx.pointer = null; ctx.draw(); show(south ? 'Keep dragging, about four and a half Cross lengths.' : 'Keep dragging, about five times the gap between the two Pointers.', 'Show me', () => animatePointer(() => pointed())); }
     }
     function animatePointer(done) {
-        const { from, to } = pointerEnds();
+        const { a, b } = pointerEnds();
         let t0 = null;
         const tick = (now) => {
             if (t0 === null) t0 = now;
             const t = Math.min(1, (now - t0) / 1200);
-            ctx.pointer = { from, to, t: Math.max(0.001, t) };
+            ctx.pointer = { a, b, t: Math.max(0.001, t) };
             ctx.draw();
             if (t < 1) requestAnimationFrame(tick); else if (done) done();
         };
@@ -222,6 +236,7 @@ export function initGuide(ctx) {
 
     // ---- the tour player ----------------------------------------------------------------
     let playing = false;
+    let viewBefore = null;     // the tour moves the view around; it is put back when the tour ends
     const SAY_LINES = [
         'Look up.', 'This is the Big Dipper.', 'Follow the Pointers.', 'There is Polaris, the North Star.', 'The sky turns around it.',
         'Here is the Moon.', 'That bright one is a planet.', 'Planets do not twinkle.', 'Wait for your eyes to get used to the dark.',
@@ -233,6 +248,7 @@ export function initGuide(ctx) {
     async function playTour(steps) {
         if (playing || !steps.length) return;
         playing = true;
+        viewBefore = { az: ctx.view.az, alt: ctx.view.alt, zoom: ctx.view.zoom };
         document.body.classList.add('playing');
         $('tourBar').hidden = false;
         const bar = $('tourSay');
@@ -267,6 +283,7 @@ export function initGuide(ctx) {
         document.body.classList.remove('playing');
         $('tourBar').hidden = true;
         ctx.pointer = null; ctx.ringsExtra = [];
+        if (viewBefore) { ctx.view.look(viewBefore.az, viewBefore.alt); ctx.view.zoom = viewBefore.zoom; viewBefore = null; }
         ctx.draw();
     }
     $('tourStop').addEventListener('click', stopTour);

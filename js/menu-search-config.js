@@ -12,8 +12,10 @@
         return d;
     }
     // the More buttons open the real screens, which fill themselves; opening the dialog bare would show it empty
-    function viaButton(id, btn) {
-        return dialog(id, { open: function () { document.getElementById(btn).click(); } });
+    function viaButton(id, btn, more) {
+        var d = { open: function () { document.getElementById(btn).click(); } };
+        for (var k in more) d[k] = more[k];
+        return dialog(id, d);
     }
 
     function fromApp() {
@@ -57,9 +59,9 @@
             viaButton('moonDialog', 'btnMoon'),
             viaButton('planetsDialog', 'btnPlanets'),
             viaButton('darkDialog', 'btnDark'),
-            viaButton('partyDialog', 'btnParty'),
+            viaButton('partyDialog', 'btnParty', { fields: false }),
             viaButton('logDialog', 'btnLog'),
-            viaButton('tourDialog', 'btnTour'),
+            viaButton('tourDialog', 'btnTour', { fields: false }),
             viaButton('chartDialog', 'btnChart'),
             viaButton('colorsDialog', 'btnColors'),
             viaButton('dipperDialog', 'btnDipperClock'),
@@ -81,15 +83,15 @@
             { say: 'southern cross crux', find: ['con:cru'] },
             { say: 'orion belt hunter', find: ['con:ori'] },
             { say: 'cassiopeia w shape', find: ['con:cas'] },
-            { say: 'moon phase full moon new moon crescent gibbous quarter moonrise', find: ['btnMoon', 'body:moon'] },
-            { say: 'planets planet tonight jupiter saturn mars venus mercury', find: ['btnPlanets'] },
-            { say: 'time clock tonight now date calendar month year season winter summer stars', find: ['btnCalendar', 'whenDate', 'monthStep'] },
-            { say: 'light pollution dark sky city park how many stars compare', find: ['btnDark', 'darkSlider'] },
-            { say: 'star party plan night out bring list targets', find: ['btnParty'] },
-            { say: 'log journal observing diary what i saw', find: ['btnLog'] },
-            { say: 'tour steps cards program play code glassbox', find: ['btnTour'] },
-            { say: 'print chart paper map of the sky printable', find: ['btnChart'] },
-            { say: 'where city place location map country', find: ['btnPlace'] },
+            { say: 'moon phase full moon new moon crescent gibbous quarter moonrise', find: ['moonDialog', 'body:moon'] },
+            { say: 'planets planet tonight jupiter saturn mars venus mercury', find: ['planetsDialog'] },
+            { say: 'time clock tonight now date calendar month year season winter summer stars', find: ['whenDialog', 'whenDate', 'monthStep'] },
+            { say: 'light pollution dark sky city park how many stars compare', find: ['darkDialog', 'darkSlider'] },
+            { say: 'star party plan night out bring list targets', find: ['partyDialog'] },
+            { say: 'log journal observing diary what i saw', find: ['logDialog'] },
+            { say: 'tour steps cards program play code glassbox', find: ['tourDialog'] },
+            { say: 'print chart paper map of the sky printable', find: ['chartDialog'] },
+            { say: 'where city place location map country', find: ['placeDialog', 'btnPlace'] },
             { say: 'lines constellation lines figures pictures', find: ['layerLines'] },
             { say: 'names labels', find: ['layerNames', 'layerStarNames'] },
             { say: 'grid coordinates altitude azimuth right ascension declination', find: ['layerAltAz', 'layerRaDec'] },
@@ -101,10 +103,10 @@
             { say: 'start over new reset', find: ['btnNew'] },
             { say: 'guide help first minute again', find: ['btnGuideAgain'] },
             { say: 'credits sources license data about', find: ['btnAbout'] },
-            { say: 'my constellation draw my own join stars picture story name', find: ['btnMine'] },
-            { say: 'star colors temperature hot cold blue red kelvin', find: ['btnColors'] },
-            { say: 'dipper clock record snapshot rotation hours', find: ['btnDipperClock'] },
-            { say: 'year planets chart months calendar when to see', find: ['btnYear'] },
+            { say: 'my constellation draw my own join stars picture story name', find: ['mineDialog'] },
+            { say: 'star colors temperature hot cold blue red kelvin', find: ['colorsDialog'] },
+            { say: 'dipper clock record snapshot rotation hours', find: ['dipperDialog'] },
+            { say: 'year planets chart months calendar when to see', find: ['yearDialog'] },
             { say: 'moon calendar print month', find: ['moonPrint'] }
         ]
     });

@@ -4,9 +4,9 @@
 //
 // Frames: a "hor" vector is Astronomy Engine's horizontal frame, x north, y west, z up.
 // Azimuth is measured from north through east, altitude up from the horizon.
-import { STARS_B64, STAR_COUNT } from './data/stars.mjs?v=2';
-import { NAMES, DIST, BAYER } from './data/names.mjs?v=2';
-import { LINES, CONSTELLATIONS, ASTERISMS } from './data/lines.mjs?v=2';
+import { STARS_B64, STAR_COUNT } from './data/stars.mjs?v=3';
+import { NAMES, DIST, BAYER } from './data/names.mjs?v=3';
+import { LINES, CONSTELLATIONS, ASTERISMS } from './data/lines.mjs?v=3';
 
 let A = null;
 export function useEngine(engine) { A = engine; }
@@ -59,6 +59,12 @@ for (let i = 0; i < N; i++) {
 export const starId = (i) => idByIndex[i];
 export const starIndexById = (id) => indexById.get(id);
 export const starName = (i) => NAMES[HR[i]] || BAYER[HR[i]] || ('HR ' + HR[i]);
+// for a child: a proper name, else the designation and its constellation, never a bare catalog number
+export function friendlyName(i) {
+    if (NAMES[HR[i]]) return NAMES[HR[i]];
+    const con = CONST_BY_ID[starConstellation(i)];
+    return (BAYER[HR[i]] || 'a star') + (con ? ' in ' + con.name : '');
+}
 
 // which constellation each catalog star belongs to, from the engine's IAU boundaries, on demand
 const conCache = new Map();
@@ -268,7 +274,8 @@ export function bvClass(bv) {
     if (bv < 0.3) return 'white';
     if (bv < 0.6) return 'yellow-white';
     if (bv < 0.9) return 'yellow';
-    if (bv < 1.4) return 'orange';
+    // Aldebaran (1.54) and Arcturus (1.23) are called orange; Betelgeuse (1.85) and Antares (1.83) red
+    if (bv < 1.6) return 'orange';
     return 'red';
 }
 export const STAR_COLORS = { 'blue-white': '#b9cdff', 'white': '#f2f4ff', 'yellow-white': '#fff6dc', 'yellow': '#ffe7a8', 'orange': '#ffc27a', 'red': '#ff9c6a' };

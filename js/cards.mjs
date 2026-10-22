@@ -1,8 +1,8 @@
 // What the card says about a star, a constellation, a planet, the Moon or the Sun. Positions,
 // rise and set times and phases are worked out here from the frame; the sentences that state a
 // fact are keyed to makerspace-v2/192-night-sky-lab-sources.md (the key is in the comment).
-import * as S from './sky.mjs?v=2';
-import { esc, timeAt, deg, hms, dms } from './words.mjs?v=2';
+import * as S from './sky.mjs?v=3';
+import { esc, timeAt, deg, hms, dms } from './words.mjs?v=3';
 
 // (c1..c20) one line each, read before shipping
 const STAR_LINES = {

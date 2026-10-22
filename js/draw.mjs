@@ -2,7 +2,7 @@
 // only projects and paints. Stereographic around the view direction, so a constellation near
 // the edge keeps its shape. Canvas 2D on purpose: about three thousand dots and seven hundred
 // short lines is light work, and there is no GPU context to lose on a school Chromebook.
-import * as S from './sky.mjs?v=2';
+import * as S from './sky.mjs?v=3';
 
 const D2R = Math.PI / 180, R2D = 180 / Math.PI;
 const FOV1 = 100;          // degrees across the long side at zoom 1
@@ -81,10 +81,15 @@ function hexAlpha(hex, a) {
 const BODY_COLOR = { mercury: '#d9d2c5', venus: '#fff9e6', mars: '#ff9a5c', jupiter: '#f5e6c8', saturn: '#f2e2b0' };
 
 // sky colors by how dark it is: 1 is full night, 0 is day
+// takes '#rrggbb' or the 'rgb(r,g,b)' it returns, so mixes can be chained
+function rgb(c) {
+    if (c[0] === '#') { const n = parseInt(c.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
+    return c.match(/\d+/g).map(Number);
+}
 function mix(a, b, t) {
-    const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
-    const ch = (sh) => Math.round(((pa >> sh) & 255) * (1 - t) + ((pb >> sh) & 255) * t);
-    return `rgb(${ch(16)},${ch(8)},${ch(0)})`;
+    const pa = rgb(a), pb = rgb(b);
+    const ch = (k) => Math.round(pa[k] * (1 - t) + pb[k] * t);
+    return `rgb(${ch(0)},${ch(1)},${ch(2)})`;
 }
 
 // how faint a star the sky itself allows, before the dark sky slider
@@ -94,6 +99,11 @@ export function skyLimit(sunAlt) {
     if (sunAlt <= -6) return 3.2 + (-6 - sunAlt) / 6 * 3.3;
     if (sunAlt <= 0) return -1.5 + (-sunAlt) / 6 * 4.7;
     return -5;
+}
+
+// zooming in is the binocular view: more light, fainter stars, up to the catalog's edge
+export function effectiveLimit(scene, view) {
+    return Math.min(Math.min(scene.limit + 1.1 * Math.log2(view.zoom), 6.6), skyLimit(scene.sunAlt));
 }
 
 // radius in pixels for a magnitude at this zoom
@@ -134,8 +144,7 @@ export function render(ctx, view, scene, clip) {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
 
-    // milky glow toward the horizon at night helps the ground read as ground
-    const limit = Math.min(scene.limit, skyLimit(scene.sunAlt));
+    const limit = effectiveLimit(scene, view);
 
     if (scene.grids && (scene.grids.altaz || scene.grids.radec)) drawGrids(ctx, P, scene.grids, view);
 
@@ -341,7 +350,8 @@ function drawCompass(ctx, P, view, all) {
     for (const [az, t] of marks) {
         const v = S.altAzToHor(az, view.chart ? -3 : 0);
         const p = P(v[0], v[1], v[2]);
-        if (!p || p[2] < 0.2) continue;
+        // on the chart the horizon is the rim, 90 degrees from the center
+        if (!p || p[2] < (view.chart ? -0.2 : 0.2)) continue;
         const y = view.chart ? p[1] : p[1] + 14;
         if (y < -10 || y > view.h + 10 || p[0] < -20 || p[0] > view.w + 20) continue;
         ctx.fillStyle = 'rgba(0,0,0,0.45)';
@@ -416,7 +426,7 @@ function path(ctx, P, pts) {
 export function pick(view, scene, px, py, radius = 16) {
     const P = view.projector();
     let best = null, bestD = radius;
-    const limit = Math.min(scene.limit, skyLimit(scene.sunAlt));
+    const limit = effectiveLimit(scene, view);
     for (const b of scene.bodies) {
         if (b.id === 'sun' && b.alt < -1) continue;
         if (b.hor[2] < 0) continue;

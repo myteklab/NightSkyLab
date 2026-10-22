@@ -2,13 +2,13 @@
 // and its drags, the time strip, the found list. Screens live in screens.mjs, the first-minute
 // guide and the tour player in guide.mjs, card text in cards.mjs. The platform adapter talks
 // only to window.NightSky.
-import * as S from './sky.mjs?v=2';
-import { View, render, pick, skyLimit } from './draw.mjs?v=2';
-import { cardFor } from './cards.mjs?v=2';
-import { initGuide } from './guide.mjs?v=2';
-import { initScreens } from './screens.mjs?v=2';
-import { initMake } from './make.mjs?v=2';
-import { esc, clock } from './words.mjs?v=2';
+import * as S from './sky.mjs?v=3';
+import { View, render, pick, skyLimit } from './draw.mjs?v=3';
+import { cardFor } from './cards.mjs?v=3';
+import { initGuide } from './guide.mjs?v=3';
+import { initScreens } from './screens.mjs?v=3';
+import { initMake } from './make.mjs?v=3';
+import { esc, clock } from './words.mjs?v=3';
 
 S.useEngine(window.Astronomy);
 
@@ -107,7 +107,8 @@ function syncStrip() {
     const [y, mo, dd] = night.split('-').map(Number);
     const label = new Date(Date.UTC(y, mo - 1, dd)).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' });
     $('stripDate').textContent = (night === tonight(ctx.project.place.zone) ? 'Tonight, ' : 'Night of ') + label;
-    $('btnWhen').textContent = label + ', ' + clock(lp);
+    // the bar shows the real calendar date, which after midnight is the next one
+    $('btnWhen').textContent = new Date(Date.UTC(lp.y, lp.mo - 1, lp.d)).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' }) + ', ' + clock(lp);
 }
 
 // ---- the frame ------------------------------------------------------------------------------
@@ -175,7 +176,9 @@ function buildScene(limit) {
     }
     return {
         hor: ctx.hor, bodies: ctx.bodies, sunAlt: ctx.sunAlt, limit,
-        lineSets, labels, rings, pointer: ctx.pointer,
+        lineSets, labels, rings,
+        // the pointer line is kept as two star indexes, so it turns with the sky
+        pointer: ctx.pointer ? { a: ctx.pointer.a, b: ctx.pointer.b, t: ctx.pointer.t, from: starHor(ctx.pointer.a), to: starHor(ctx.pointer.b) } : null,
         grids: mode === 'astronomer' ? { altaz: L.has('altaz'), radec: L.has('radec'), rot: ctx.frame.rot } : null,
         big: little, compassAll: mode === 'astronomer'
     };
@@ -273,7 +276,8 @@ $('zoomIn').addEventListener('click', () => setZoom(ctx.view.zoom * 1.5));
 $('zoomOut').addEventListener('click', () => setZoom(ctx.view.zoom / 1.5));
 document.querySelectorAll('#compass button[data-az]').forEach(b => b.addEventListener('click', () => flyTo({ az: Number(b.dataset.az), alt: 25 })));
 document.addEventListener('keydown', (e) => {
-    if (e.target.closest('input, textarea, select, dialog')) return;
+    if (e.target && e.target.closest && e.target.closest('input, textarea, select, dialog')) return;
+    if (e.key === 'Escape') { if (!document.querySelector('dialog[open]') && !$('card').hidden) closeCard(); return; }
     const step = 5 / ctx.view.zoom;
     if (e.key === 'ArrowLeft') ctx.view.look(ctx.view.az - step, ctx.view.alt);
     else if (e.key === 'ArrowRight') ctx.view.look(ctx.view.az + step, ctx.view.alt);
@@ -361,10 +365,26 @@ $('cardMoon').addEventListener('click', () => { closeCard(); $('btnMoon').click(
 
 function say(text) {
     if (!('speechSynthesis' in window)) return;
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.95;
-    speechSynthesis.speak(u);
+    let spoken = false;
+    const speak = () => {
+        if (spoken) return;
+        spoken = true;
+        // Safari goes silent when cancel() lands right before speak(), so only an ongoing one is cut
+        if (speechSynthesis.speaking) speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = 0.95;
+        const voices = speechSynthesis.getVoices();
+        const v = voices.find(x => /^en/i.test(x.lang) && x.default) || voices.find(x => /^en/i.test(x.lang));
+        if (v) u.voice = v;
+        speechSynthesis.speak(u);
+    };
+    // Safari fills its voice list late; wait a moment for it, then speak either way
+    if (!speechSynthesis.getVoices().length) {
+        speechSynthesis.addEventListener('voiceschanged', speak, { once: true });
+        setTimeout(speak, 350);
+        return;
+    }
+    speak();
 }
 
 // ---- found and did ------------------------------------------------------------------------
@@ -410,7 +430,10 @@ function setMode(mode) {
     document.body.dataset.mode = mode;
     const r = $('mode' + mode[0].toUpperCase() + mode.slice(1));
     if (r) r.checked = true;
-    if (mode === 'little' && !ctx.project.view.layers.includes('lines')) toggleLayer('lines', true);
+    // Little turns the lines on for its eight pictures; leaving it takes back only what it turned on
+    if (mode === 'little' && !ctx.project.view.layers.includes('lines')) { toggleLayer('lines', true); ctx.linesByLittle = true; }
+    else if (mode !== 'little' && ctx.linesByLittle) { toggleLayer('lines', false); ctx.linesByLittle = false; }
+    if (cardHit) openCard(cardHit);
     draw();
     markDirty();
 }

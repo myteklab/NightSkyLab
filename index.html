@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Night Sky Lab</title>
-<link rel="stylesheet" href="css/app.css?v=2">
+<link rel="stylesheet" href="css/app.css?v=3">
 </head>
 <body data-mode="explorer">
 <header class="bar" id="bar">
@@ -164,7 +164,7 @@
   <h3>Dark sky</h3>
   <p class="muted">Streetlights hide the faint stars. Slide from a big city to a dark park and watch them come back.</p>
   <div class="row"><label for="darkSlider">How dark is your sky</label><input type="range" id="darkSlider" min="30" max="65" step="1"></div>
-  <div class="darkWords"><span>Big city</span><strong id="darkWord"></strong><span>Dark park</span></div>
+  <div class="darkWords"><span>City</span><strong id="darkWord"></strong><span>Park</span></div>
   <p id="darkCount" class="big"></p>
   <div class="row"><label><input type="checkbox" id="darkCompare"> Compare side by side</label></div>
   <div class="row"><label for="darkNote">What I noticed</label><textarea id="darkNote" rows="3" placeholder="What changed between the city and the park?"></textarea></div>
@@ -203,15 +203,15 @@
   <p class="muted">Step cards. Put them in order, press Play, and the sky follows them. Share the project and a friend can play your tour.</p>
   <ol id="tourList" class="tourList"></ol>
   <div class="tourAdd">
-    <label><span class="sr">What the step does</span><select id="tourDo">
+    <label for="tourDo" class="sr">What the step does</label><select id="tourDo">
       <option value="face">Face</option>
       <option value="time">Set time</option>
       <option value="find">Find</option>
       <option value="pointer">Draw the pointer line</option>
       <option value="wait">Wait</option>
       <option value="say">Say</option>
-    </select></label>
-    <label><span class="sr">What the step uses</span><select id="tourArg"></select></label>
+    </select>
+    <label for="tourArg" class="sr">What the step uses</label><select id="tourArg"></select>
     <button type="button" id="tourAdd" class="small">Add the card</button>
   </div>
   <div class="acts">
@@ -294,9 +294,9 @@
 
 <div id="printArea" class="printArea" hidden></div>
 
-<script src="js/vendor/astronomy.browser.min.js?v=2"></script>
-<script src="js/menu-search.js?v=2"></script>
-<script src="js/menu-search-config.js?v=2"></script>
-<script type="module" src="js/app.mjs?v=2"></script>
+<script src="js/vendor/astronomy.browser.min.js?v=3"></script>
+<script src="js/menu-search.js?v=3"></script>
+<script src="js/menu-search-config.js?v=3"></script>
+<script type="module" src="js/app.mjs?v=3"></script>
 </body>
 </html>

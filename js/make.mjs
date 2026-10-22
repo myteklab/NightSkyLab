@@ -1,8 +1,8 @@
 // The making and measuring screens that came after the first minute: star colors, the Dipper
 // clock, My constellation (tap stars to join them), the year planet chart, the Moon calendar print.
-import * as S from './sky.mjs?v=2';
-import { esc, clock, dateWords } from './words.mjs?v=2';
-import { drawPhase } from './moonface.mjs?v=2';
+import * as S from './sky.mjs?v=3';
+import { esc, clock, dateWords } from './words.mjs?v=3';
+import { drawPhase } from './moonface.mjs?v=3';
 
 export function initMake(ctx) {
     const { $ } = ctx;
@@ -27,7 +27,7 @@ export function initMake(ctx) {
             if (S.MAG[i] > 2.6) break;
             if (ctx.hor[i * 3 + 2] < 0.03) continue;
             const bv = S.BV[i], cls = S.bvClass(bv), t = S.bvTemperature(bv);
-            rows.push(`<tr><td><span class="swatch" style="background:${S.STAR_COLORS[cls]}"></span></td><td>${esc(S.starName(i))}</td><td>${cls.replace('-', ' ')}</td><td>${t ? 'about ' + t.toLocaleString('en-US') + ' K' : ''}</td>${p().mode === 'astronomer' ? `<td>${Number.isFinite(bv) ? bv.toFixed(2) : ''}</td>` : ''}<td><button type="button" data-go="${S.starId(i)}">Point me at it</button></td></tr>`);
+            rows.push(`<tr><td><span class="swatch" style="background:${S.STAR_COLORS[cls]}"></span></td><td>${esc(S.friendlyName(i))}</td><td>${cls.replace('-', ' ')}</td><td>${t ? 'about ' + t.toLocaleString('en-US') + ' K' : ''}</td>${p().mode === 'astronomer' ? `<td>${Number.isFinite(bv) ? bv.toFixed(2) : ''}</td>` : ''}<td><button type="button" data-go="${S.starId(i)}">Point me at it</button></td></tr>`);
         }
         $('colorsList').innerHTML = rows.length
             ? `<tr><th></th><th>Star</th><th>Color</th><th>Surface</th>${p().mode === 'astronomer' ? '<th>B-V</th>' : ''}<th></th></tr>` + rows.join('')
@@ -120,7 +120,7 @@ export function initMake(ctx) {
             pen = hr;
         }
         ctx.ringsExtra = pen === null ? [] : [{ hor: ctx.starHor(S.indexOfHr(pen)), r: 13, color: MINE_COLOR }];
-        $('drawSay').textContent = pen === null ? 'Pen up. Tap a star to start a new line.' : `From ${S.starName(S.indexOfHr(pen))}: tap the next star, or tap it again to lift the pen.`;
+        $('drawSay').textContent = pen === null ? 'Pen up. Tap a star to start a new line.' : `From ${S.friendlyName(S.indexOfHr(pen))}: tap the next star, or tap it again to lift the pen.`;
         ctx.draw();
     }
     function stopDrawing() {
@@ -225,7 +225,11 @@ export function initMake(ctx) {
             g.fillStyle = '#111'; g.textAlign = 'left'; g.fillText(String(d), x + 6, yy + 16);
             const ds = `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const m = S.bodyAt(S.makeFrame(p().place, S.localToDate(ds, '21:00', zone())), 'moon');
-            drawPhase(g, x + cw / 2, yy + 50, 22, m.phaseAngle, p().place.lat < 0, '#222', '#e4e4e4');
+            // on paper the lit part stays white and the shadow dark, with a rim so a new Moon is still a Moon
+            drawPhase(g, x + cw / 2, yy + 50, 22, m.phaseAngle, p().place.lat < 0, '#ffffff', '#333333');
+            g.strokeStyle = '#333'; g.lineWidth = 1;
+            g.beginPath(); g.arc(x + cw / 2, yy + 50, 22, 0, Math.PI * 2); g.stroke();
+            g.strokeStyle = '#bbb';
             g.fillStyle = '#555';
         }
         printCanvas(c, 'Moon calendar');
