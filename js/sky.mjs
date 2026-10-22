@@ -4,9 +4,9 @@
 //
 // Frames: a "hor" vector is Astronomy Engine's horizontal frame, x north, y west, z up.
 // Azimuth is measured from north through east, altitude up from the horizon.
-import { STARS_B64, STAR_COUNT } from './data/stars.mjs?v=1';
-import { NAMES, DIST, BAYER } from './data/names.mjs?v=1';
-import { LINES, CONSTELLATIONS, ASTERISMS } from './data/lines.mjs?v=1';
+import { STARS_B64, STAR_COUNT } from './data/stars.mjs?v=2';
+import { NAMES, DIST, BAYER } from './data/names.mjs?v=2';
+import { LINES, CONSTELLATIONS, ASTERISMS } from './data/lines.mjs?v=2';
 
 let A = null;
 export function useEngine(engine) { A = engine; }

@@ -2,7 +2,7 @@
 // only projects and paints. Stereographic around the view direction, so a constellation near
 // the edge keeps its shape. Canvas 2D on purpose: about three thousand dots and seven hundred
 // short lines is light work, and there is no GPU context to lose on a school Chromebook.
-import * as S from './sky.mjs?v=1';
+import * as S from './sky.mjs?v=2';
 
 const D2R = Math.PI / 180, R2D = 180 / Math.PI;
 const FOV1 = 100;          // degrees across the long side at zoom 1

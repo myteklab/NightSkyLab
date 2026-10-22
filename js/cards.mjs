@@ -1,8 +1,8 @@
 // What the card says about a star, a constellation, a planet, the Moon or the Sun. Positions,
 // rise and set times and phases are worked out here from the frame; the sentences that state a
 // fact are keyed to makerspace-v2/192-night-sky-lab-sources.md (the key is in the comment).
-import * as S from './sky.mjs?v=1';
-import { esc, timeAt, deg, hms, dms } from './words.mjs?v=1';
+import * as S from './sky.mjs?v=2';
+import { esc, timeAt, deg, hms, dms } from './words.mjs?v=2';
 
 // (c1..c20) one line each, read before shipping
 const STAR_LINES = {
@@ -124,7 +124,9 @@ export function cardFor(ctx, hit) {
         if (up === 0) parts.push('<p>It is under the horizon right now. Try another hour, or another month.</p>');
         else if (where) parts.push(`<p>${where}${up < stars.length ? ' Part of it is still below the horizon.' : ''}</p>`);
         if (astro) parts.push(`<div class="nums"><b>IAU abbreviation</b><span>${c.iau}</span><b>Figure</b><span>${stars.length} stars, ${segs.length} lines</span><b>Center RA, Dec</b><span>${hms(c.ra / 15)}, ${dms(c.dec)}</span></div>`);
-        return { name, kind: isDipper ? 'star picture' : 'constellation', html: parts.join(''), hor, ringR: 0, found: { kind: 'constellation', id: hit.id } };
+        const actions = [];
+        if (isDipper && up > 0 && ctx.recordDipper) actions.push({ label: 'Record where the Dipper is', run: () => ctx.recordDipper() });
+        return { name, kind: isDipper ? 'star picture' : 'constellation', html: parts.join(''), hor, ringR: 0, found: { kind: 'constellation', id: hit.id }, actions };
     }
     if (hit.kind === 'planet' || hit.kind === 'moon' || hit.kind === 'sun') {
         const b = ctx.bodies.find(x => x.id === hit.id);

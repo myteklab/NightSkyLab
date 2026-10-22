@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Night Sky Lab</title>
-<link rel="stylesheet" href="css/app.css?v=1">
+<link rel="stylesheet" href="css/app.css?v=2">
 </head>
 <body data-mode="explorer">
 <header class="bar" id="bar">
@@ -34,6 +34,8 @@
   </div>
   <div id="compareLabels" class="compareLabels" hidden><span>Big city</span><span>Dark park</span></div>
   <div id="tourBar" class="tourBar" hidden><span id="tourSay"></span><button type="button" id="tourStop" class="small">Stop the tour</button></div>
+  <div id="drawBar" class="tourBar" hidden><span id="drawSay"></span><button type="button" id="drawUndo" class="small ghost">Undo line</button><button type="button" id="drawDone" class="small">Done</button></div>
+  <div id="toast" class="toast" hidden></div>
   <section id="card" class="card" hidden>
     <div class="cardHead">
       <strong id="cardName"></strong>
@@ -98,6 +100,10 @@
       <button type="button" id="btnParty" class="menu">Plan a star party</button>
       <button type="button" id="btnLog" class="menu">My observing log</button>
       <button type="button" id="btnTour" class="menu">My tour (step cards)</button>
+      <button type="button" id="btnMine" class="menu">My constellation</button>
+      <button type="button" id="btnColors" class="menu">Star colors and temperatures</button>
+      <button type="button" id="btnDipperClock" class="menu">The Dipper clock</button>
+      <button type="button" id="btnYear" class="menu notlittle">Planets through the year</button>
       <button type="button" id="btnChart" class="menu">Print a sky chart</button>
       <button type="button" id="btnGuideAgain" class="menu">Start the guide again</button>
       <button type="button" id="btnAbout" class="menu">About the data</button>
@@ -136,6 +142,8 @@
     <button type="button" id="moonPrev" class="small">Day before</button>
     <button type="button" id="moonNext" class="small">Day after</button>
     <span id="moonMonthCount" class="muted"></span>
+    <div class="grow"></div>
+    <button type="button" id="moonPrint" class="small">Print this month</button>
   </div>
   <h4>Log tonight's Moon</h4>
   <p class="muted">Go outside and look first. Then pick the shape you saw.</p>
@@ -213,6 +221,40 @@
   <form method="dialog"><button class="hdr">Close</button></form>
 </dialog>
 
+<dialog id="colorsDialog">
+  <h3>Star colors</h3>
+  <p class="muted">Stars are not all white. Blue-white ones are the hottest, red ones the coolest. The color tells the temperature of the surface. These are the bright ones above your horizon right now.</p>
+  <table id="colorsList" class="list"></table>
+  <form method="dialog"><button class="hdr">Close</button></form>
+</dialog>
+
+<dialog id="dipperDialog">
+  <h3>The Dipper clock</h3>
+  <p class="muted">Each time you press "Record where the Dipper is" on its card, the figure is drawn here where it stood around Polaris.</p>
+  <canvas id="dipperCanvas" width="420" height="420"></canvas>
+  <p id="dipperSay" class="muted"></p>
+  <form method="dialog"><button class="hdr">Close</button></form>
+</dialog>
+
+<dialog id="mineDialog">
+  <h3>My constellation</h3>
+  <p class="muted">Join real stars into a picture of your own, name it, and tell its story. It is drawn over the sky in pink and goes to the gallery with the project.</p>
+  <div class="acts"><button type="button" id="mineDraw" class="primary">Draw on the sky</button><button type="button" id="mineUndo" class="small">Undo last line</button><button type="button" id="mineClear" class="small ghost">Clear the lines</button><span id="mineCount" class="muted"></span></div>
+  <div class="row"><label for="mineName">Its name</label><input type="text" id="mineName" maxlength="40" placeholder="The Flying Kite"></div>
+  <div class="row"><label for="mineStory">Its story</label><textarea id="mineStory" rows="4" maxlength="600" placeholder="Who or what is it, and why is it in the sky?"></textarea></div>
+  <div class="acts"><button type="button" id="mineKeep" class="primary">Keep the name and story</button><span id="mineSay" class="muted"></span></div>
+  <form method="dialog"><button class="hdr">Close</button></form>
+</dialog>
+
+<dialog id="yearDialog">
+  <h3>Planets through the year</h3>
+  <canvas id="yearCanvas" width="720" height="300"></canvas>
+  <div id="yearLegend" class="legend"></div>
+  <p id="yearSay" class="muted"></p>
+  <div class="acts"><button type="button" id="yearPrint" class="primary">Print</button></div>
+  <form method="dialog"><button class="hdr">Close</button></form>
+</dialog>
+
 <dialog id="numbersDialog">
   <h3>Sky numbers</h3>
   <p class="muted">Every number on the card, and the steps between them.</p>
@@ -252,9 +294,9 @@
 
 <div id="printArea" class="printArea" hidden></div>
 
-<script src="js/vendor/astronomy.browser.min.js?v=1"></script>
-<script src="js/menu-search.js?v=1"></script>
-<script src="js/menu-search-config.js?v=1"></script>
-<script type="module" src="js/app.mjs?v=1"></script>
+<script src="js/vendor/astronomy.browser.min.js?v=2"></script>
+<script src="js/menu-search.js?v=2"></script>
+<script src="js/menu-search-config.js?v=2"></script>
+<script type="module" src="js/app.mjs?v=2"></script>
 </body>
 </html>

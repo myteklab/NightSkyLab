@@ -235,6 +235,59 @@ ok(/Southern Cross/.test($('#guideText').textContent), 'guide switches to the So
     ok(sd.constellations.length === 88 && sd.stars.length > 300 && sd.bodies.length === 6, 'search data: 88 constellations, the named stars, Moon and five planets', [sd.constellations.length, sd.stars.length, sd.bodies.length]);
 }
 
+// ---- star colors, the Dipper clock, My constellation, the year chart --------------------------
+click('#btnColors');
+ok($('#colorsDialog').open && P().did.includes('star-colors'), 'star colors opens and counts as did star-colors', P().did);
+ok(d.querySelectorAll('#colorsList tr').length >= 2 || /No bright star/.test($('#colorsList').textContent), 'colors table has rows or says why not');
+$('#colorsDialog').close();
+N.goTo('constellation', 'uma');
+await sleep(900);
+const rec = [...d.querySelectorAll('#card .cardActs .dyn')].find(b => /Record where the Dipper/.test(b.textContent));
+if (rec) {
+    click(rec);
+    ok(P().dipper.length === 1 && P().dipper[0].time === P().when.time, 'a Dipper snapshot at the strip time', P().dipper);
+    click(rec);
+    ok(P().dipper.length === 1, 'the same time is not recorded twice');
+    input('#timeStrip', Number($('#timeStrip').value) + 36);
+    N.goTo('constellation', 'uma'); await sleep(900);
+    click([...d.querySelectorAll('#card .cardActs .dyn')].find(b => /Record where the Dipper/.test(b.textContent)));
+    ok(P().dipper.length === 2, 'three hours later, a second snapshot', P().dipper);
+} else ok(true, 'Dipper under the horizon from Sydney: no record button, as designed');
+click('#btnDipperClock');
+ok($('#dipperDialog').open && /snapshot/.test($('#dipperSay').textContent), 'Dipper clock explains itself', $('#dipperSay').textContent);
+$('#dipperDialog').close();
+click('#btnMine');
+click('#mineDraw');
+ok(!$('#drawBar').hidden && $('#mineDialog').open === false, 'drawing mode shows its bar');
+{
+    const i1 = N.state.S.starIndexById('sirius'), i2 = N.state.S.starIndexById('canopus'), i3 = N.state.S.starIndexById('rigel');
+    N.state.drawing.tap({ kind: 'star', i: i1 }); N.state.drawing.tap({ kind: 'star', i: i2 }); N.state.drawing.tap({ kind: 'star', i: i3 });
+    ok(P().mine.lines.length === 2 && P().mine.lines[0].a === N.state.S.HR[i1] && P().mine.lines[0].b === N.state.S.HR[i2], 'two taps make a line, a third continues it', P().mine.lines);
+    N.state.drawing.tap({ kind: 'star', i: i3 });
+    N.state.drawing.tap({ kind: 'star', i: i1 });
+    ok(P().mine.lines.length === 2, 'tapping the last star lifts the pen', P().mine.lines);
+    click('#drawUndo');
+    ok(P().mine.lines.length === 1, 'undo takes the last line');
+}
+click('#drawDone');
+ok($('#mineDialog').open && /1 line/.test($('#mineCount').textContent), 'back in the dialog with the count', $('#mineCount').textContent);
+input('#mineName', 'The Long Oar'); input('#mineStory', 'It rows across the summer sky.');
+let asked = null;
+N.hooks.checkText = async (f) => { asked = f; return { nameOk: false, textOk: true }; };
+click('#mineKeep'); await sleep(50);
+ok(asked && asked.name === 'The Long Oar' && P().mine.name === '', 'a refused name is not kept', [asked, P().mine.name]);
+N.hooks.checkText = async () => ({ nameOk: true, textOk: true });
+click('#mineKeep'); await sleep(50);
+ok(P().mine.name === 'The Long Oar' && P().mine.story === 'It rows across the summer sky.', 'a clean name and story are kept', P().mine);
+delete N.hooks.checkText;
+$('#mineDialog').close();
+click('#btnYear');
+ok($('#yearDialog').open && P().did.includes('planet-year') && /15th of each month/.test($('#yearSay').textContent), 'year chart opens and counts as did planet-year');
+ok(d.querySelectorAll('#yearLegend span').length === 6, 'six legend entries');
+$('#yearDialog').close();
+click('#btnMoon'); click('#moonPrint'); $('#moonDialog').close();
+ok(!$('#printArea').hidden && $('#printArea img'), 'the Moon calendar goes to the print area');
+
 // ---- a preview comes back ---------------------------------------------------------------------
 ok((await N.previewDataUrl()).startsWith('data:image/png'), 'preview data url');
 ok(errors.length === 0, 'no errors during the run', errors);

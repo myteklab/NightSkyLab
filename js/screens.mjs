@@ -1,8 +1,9 @@
 // Every dialog: the place picker and map, the calendar, the Moon, planets, dark sky, the star
 // party plan, the observing log, the tour builder and the printable chart.
-import * as S from './sky.mjs?v=1';
-import { View, render, skyLimit } from './draw.mjs?v=1';
-import { esc, timeAt, dateWords, clock } from './words.mjs?v=1';
+import * as S from './sky.mjs?v=2';
+import { View, render, skyLimit } from './draw.mjs?v=2';
+import { esc, timeAt, dateWords, clock } from './words.mjs?v=2';
+import { drawPhase } from './moonface.mjs?v=2';
 
 export function initScreens(ctx) {
     const { $ } = ctx;
@@ -19,7 +20,7 @@ export function initScreens(ctx) {
     // ---- place ------------------------------------------------------------------------------
     let cities = null, land = null;
     const search = $('citySearch'), list = $('cityList');
-    async function loadCities() { if (!cities) cities = await import('./data/cities.mjs?v=1'); return cities; }
+    async function loadCities() { if (!cities) cities = await import('./data/cities.mjs?v=2'); return cities; }
     $('placeDialog').addEventListener('close', () => { search.value = ''; list.innerHTML = ''; });
     $('btnPlace').addEventListener('click', () => setTimeout(() => search.focus(), 50));
     search.addEventListener('input', async () => {
@@ -50,7 +51,7 @@ export function initScreens(ctx) {
     $('btnMap').addEventListener('click', async () => {
         $('mapWrap').hidden = !$('mapWrap').hidden;
         if ($('mapWrap').hidden) return;
-        if (!land) land = await import('./data/land.mjs?v=1');
+        if (!land) land = await import('./data/land.mjs?v=2');
         drawMap();
     });
     function drawMap(mark) {
@@ -105,23 +106,6 @@ export function initScreens(ctx) {
     // ---- the Moon ------------------------------------------------------------------------
     let moonDays = 0;
     const southUp = () => p().place.lat < 0;
-    function drawPhase(g, cx, cy, r, phaseAngle, mirror) {
-        const k = Math.cos(phaseAngle * Math.PI / 180);
-        g.save();
-        g.translate(cx, cy);
-        // waxing Moon is lit on the right as seen from the north; the south sees it the other way up
-        if (mirror) g.scale(-1, 1);
-        g.fillStyle = '#3a3f52';
-        g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.fill();
-        g.fillStyle = '#f1efe4';
-        g.beginPath();
-        g.arc(0, 0, r, -Math.PI / 2, Math.PI / 2, false);
-        const a = Math.max(0.01, Math.abs(k)) * r;
-        if (k < 0) g.ellipse(0, 0, a, r, 0, Math.PI / 2, Math.PI * 1.5, false);
-        else g.ellipse(0, 0, a, r, 0, Math.PI / 2, Math.PI * 1.5, true);
-        g.closePath(); g.fill();
-        g.restore();
-    }
     const moonOf = (date) => S.bodyAt(S.makeFrame(p().place, date), 'moon');
     function showMoon() {
         open('moonDialog');

@@ -30,7 +30,6 @@
         });
         // things students ask for that come in a later version: say so instead of finding nothing
         out.push({ kind: 'note', key: 'note:meteors', label: 'Shooting stars (meteor showers)', path: 'Coming later', body: 'Meteor shower dates are not in this version yet.', run: function () { document.getElementById('btnAbout').click(); } });
-        out.push({ kind: 'note', key: 'note:mine', label: 'My constellation (draw your own)', path: 'Coming later', body: 'Joining stars into your own picture is not in this version yet. The tour cards are the first step.', run: function () { document.getElementById('btnTour').click(); } });
         return out;
     }
 
@@ -62,6 +61,10 @@
             viaButton('logDialog', 'btnLog'),
             viaButton('tourDialog', 'btnTour'),
             viaButton('chartDialog', 'btnChart'),
+            viaButton('colorsDialog', 'btnColors'),
+            viaButton('dipperDialog', 'btnDipperClock'),
+            viaButton('mineDialog', 'btnMine'),
+            viaButton('yearDialog', 'btnYear'),
             dialog('aboutDialog', { fields: false })
         ],
         skip: {
@@ -98,7 +101,11 @@
             { say: 'start over new reset', find: ['btnNew'] },
             { say: 'guide help first minute again', find: ['btnGuideAgain'] },
             { say: 'credits sources license data about', find: ['btnAbout'] },
-            { say: 'my constellation draw my own', find: ['note:mine'] }
+            { say: 'my constellation draw my own join stars picture story name', find: ['btnMine'] },
+            { say: 'star colors temperature hot cold blue red kelvin', find: ['btnColors'] },
+            { say: 'dipper clock record snapshot rotation hours', find: ['btnDipperClock'] },
+            { say: 'year planets chart months calendar when to see', find: ['btnYear'] },
+            { say: 'moon calendar print month', find: ['moonPrint'] }
         ]
     });
 })();

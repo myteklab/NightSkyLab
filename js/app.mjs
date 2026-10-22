@@ -2,12 +2,13 @@
 // and its drags, the time strip, the found list. Screens live in screens.mjs, the first-minute
 // guide and the tour player in guide.mjs, card text in cards.mjs. The platform adapter talks
 // only to window.NightSky.
-import * as S from './sky.mjs?v=1';
-import { View, render, pick, skyLimit } from './draw.mjs?v=1';
-import { cardFor } from './cards.mjs?v=1';
-import { initGuide } from './guide.mjs?v=1';
-import { initScreens } from './screens.mjs?v=1';
-import { esc, clock } from './words.mjs?v=1';
+import * as S from './sky.mjs?v=2';
+import { View, render, pick, skyLimit } from './draw.mjs?v=2';
+import { cardFor } from './cards.mjs?v=2';
+import { initGuide } from './guide.mjs?v=2';
+import { initScreens } from './screens.mjs?v=2';
+import { initMake } from './make.mjs?v=2';
+import { esc, clock } from './words.mjs?v=2';
 
 S.useEngine(window.Astronomy);
 
@@ -50,6 +51,8 @@ const ctx = {
     dirtyCb: null,
     name: 'Night sky',
     compare: false,
+    hooks: {},            // the adapter may add checkText({name, text}) -> {nameOk, textOk}
+    drawing: null,        // set by My constellation while stars are being joined
     pointer: null,         // {from, to, t} the guided pointer line
     highlight: new Set(),  // constellation ids drawn in gold
     ringsExtra: [],
@@ -148,6 +151,7 @@ function buildScene(limit) {
     }
     if (ctx.guideLines) lineSets.push({ segs: ctx.guideLines, color: 'rgba(255,214,110,0.9)', width: 1.6 });
     for (const id of ctx.highlight) lineSets.push({ segs: id === 'uma' ? S.ASTERISMS.dipper : (id === 'dipper' ? S.ASTERISMS.dipper : S.LINES[id]), color: 'rgba(255,214,110,0.9)', width: 1.6 });
+    if (p.mine.lines.length) lineSets.push({ segs: p.mine.lines.map(l => [l.a, l.b]), color: ctx.mineColor || 'rgba(255,140,220,0.95)', width: 2 });
 
     const labels = [];
     if (L.has('names')) for (const c of S.CONSTELLATIONS) {
@@ -284,6 +288,7 @@ document.addEventListener('keydown', (e) => {
 
 function tap(x, y) {
     const hit = pick(ctx.view, buildScene(ctx.compare ? ctx.project.darkSky.park : ctx.project.view.dark), x, y);
+    if (ctx.drawing) { ctx.drawing.tap(hit); return; }
     if (ctx.guide && ctx.guide.onTap && ctx.guide.onTap(hit)) return;
     if (hit) openCard(hit); else closeCard();
 }
@@ -328,6 +333,14 @@ function openCard(hit) {
     $('cardFly').hidden = !card.hor;
     $('cardMoon').hidden = hit.kind !== 'moon';
     $('cardNumbers').hidden = !card.numbers;
+    // a card may bring its own buttons (the Dipper's "Record where the Dipper is")
+    document.querySelectorAll('#card .cardActs .dyn').forEach(b => b.remove());
+    for (const a of card.actions || []) {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'small dyn'; b.textContent = a.label;
+        b.addEventListener('click', a.run);
+        $('card').querySelector('.cardActs').appendChild(b);
+    }
     $('card').hidden = false;
     ctx.ringsExtra = card.hor ? [{ hor: card.hor, r: card.ringR || 14, color: 'rgba(110,168,255,0.9)' }] : [];
     draw();
@@ -503,6 +516,7 @@ function goTo(kind, id) {
 
 window.NightSky = {
     serializeProjectData, loadProjectData, isRun, previewDataUrl, searchData, goTo,
+    hooks: ctx.hooks,
     setName(n) { ctx.name = n || 'Night sky'; },
     onDirty(cb) { ctx.dirtyCb = cb; },
     isDirty() { return ctx.dirty; },
@@ -516,6 +530,7 @@ window.loadProjectData = loadProjectData;
 // ---- start ----------------------------------------------------------------------------------
 fit();
 initScreens(ctx);
+initMake(ctx);
 ctx.guide = initGuide(ctx);
 applyProject(blankProject());
 ctx.guide.start();

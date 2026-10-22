@@ -1,6 +1,6 @@
 // The first minute (find the Dipper, drag the pointers to Polaris, turn the night) and the
 // tour player, which is Glassbox rung 1: a list of step cards the sky follows.
-import * as S from './sky.mjs?v=1';
+import * as S from './sky.mjs?v=2';
 
 export function initGuide(ctx) {
     const { $ } = ctx;
