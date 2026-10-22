@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Night Sky Lab</title>
+<link rel="stylesheet" href="css/app.css?v=1">
+</head>
+<body data-mode="explorer">
+<header class="bar" id="bar">
+  <div class="brand" translate="no">Night Sky Lab</div>
+  <button type="button" id="btnPlace" class="hdr place" title="Pick the city whose sky this is">Where are you? <u>Pick a city</u></button>
+  <button type="button" id="btnWhen" class="hdr when" title="Pick the date and time">Tonight</button>
+  <div class="grow"></div>
+  <button type="button" id="btnMore" class="hdr" title="Moon, planets, calendar, dark sky, star party, log, tour, print">More</button>
+</header>
+
+<main id="stage">
+  <canvas id="sky"></canvas>
+  <div id="sample" class="tag">Sample sky</div>
+  <div id="guide" class="guide" hidden>
+    <span id="guideText"></span>
+    <button type="button" id="guideAct" class="small">Show me</button>
+    <button type="button" id="guideSkip" class="small ghost" title="Put the guide away">Skip</button>
+  </div>
+  <div id="chips" class="chips"></div>
+  <div id="compass" class="compass">
+    <button type="button" data-az="0" title="Face north">N</button>
+    <button type="button" data-az="90" title="Face east">E</button>
+    <button type="button" data-az="180" title="Face south">S</button>
+    <button type="button" data-az="270" title="Face west">W</button>
+    <button type="button" id="zoomIn" title="Zoom in, like binoculars">+</button>
+    <button type="button" id="zoomOut" title="Zoom out">&minus;</button>
+  </div>
+  <div id="compareLabels" class="compareLabels" hidden><span>Big city</span><span>Dark park</span></div>
+  <div id="tourBar" class="tourBar" hidden><span id="tourSay"></span><button type="button" id="tourStop" class="small">Stop the tour</button></div>
+  <section id="card" class="card" hidden>
+    <div class="cardHead">
+      <strong id="cardName"></strong>
+      <span id="cardKind" class="muted"></span>
+      <button type="button" id="cardClose" class="x" title="Close">&times;</button>
+    </div>
+    <div id="cardBody" class="cardBody"></div>
+    <div class="cardActs">
+      <button type="button" id="cardFound" class="primary">Found it</button>
+      <button type="button" id="cardFly" class="small">Point me at it</button>
+      <button type="button" id="cardNumbers" class="small astronomer">Sky numbers</button>
+      <button type="button" id="cardSay" class="small little">Read it to me</button>
+      <button type="button" id="cardMoon" class="small" hidden>The Moon screen</button>
+    </div>
+  </section>
+</main>
+
+<footer id="strip" class="strip">
+  <span class="stripLabel" id="stripDate">Tonight</span>
+  <input type="range" id="timeStrip" min="0" max="287" value="96" aria-label="Time of night">
+  <span class="stripLabel" id="stripTime">8:00 pm</span>
+  <button type="button" id="btnNow" class="small" title="Set the clock to right now">Now</button>
+</footer>
+
+<dialog id="placeDialog">
+  <h3>Where are you?</h3>
+  <p class="muted">Pick the nearest big city. The sky changes very little across a whole degree, so nothing closer than a city is kept.</p>
+  <div class="row"><label for="citySearch">City</label><input type="text" id="citySearch" placeholder="Type three letters" autocomplete="off"></div>
+  <ul id="cityList" class="cityList"></ul>
+  <button type="button" id="btnMap" class="small ghost">Use the map instead</button>
+  <div id="mapWrap" hidden>
+    <canvas id="mapCanvas" width="720" height="360"></canvas>
+    <p class="muted" id="mapSay">Tap a spot. It snaps to the nearest whole degree.</p>
+  </div>
+  <form method="dialog"><button class="hdr">Close</button></form>
+</dialog>
+
+<dialog id="whenDialog">
+  <h3>When?</h3>
+  <div class="row"><label for="whenDate">Date</label><input type="date" id="whenDate"></div>
+  <div class="row"><label for="whenTime">Time</label><input type="time" id="whenTime" step="300"></div>
+  <div class="acts"><button type="button" id="whenNow" class="small">Right now</button><button type="button" id="whenTonight" class="small">Tonight at 8</button></div>
+  <h4>Turn the calendar</h4>
+  <p class="muted">Same place, same clock, a month later. Watch which stars rise in the east as the year goes round.</p>
+  <div class="acts">
+    <button type="button" id="monthBack" class="small">Month back</button>
+    <button type="button" id="monthStep" class="primary">Same time, next month</button>
+  </div>
+  <p class="muted" id="monthCount"></p>
+  <form method="dialog"><button class="hdr">Close</button></form>
+</dialog>
+
+<dialog id="moreDialog">
+  <h3>More</h3>
+  <div class="moreGrid">
+    <div class="moreCol">
+      <h4>Go to</h4>
+      <button type="button" id="btnMoon" class="menu">The Moon tonight</button>
+      <button type="button" id="btnPlanets" class="menu">Planets up tonight</button>
+      <button type="button" id="btnCalendar" class="menu">Date, time and the year</button>
+      <button type="button" id="btnDark" class="menu">Dark sky: city or park</button>
+      <button type="button" id="btnParty" class="menu">Plan a star party</button>
+      <button type="button" id="btnLog" class="menu">My observing log</button>
+      <button type="button" id="btnTour" class="menu">My tour (step cards)</button>
+      <button type="button" id="btnChart" class="menu">Print a sky chart</button>
+      <button type="button" id="btnGuideAgain" class="menu">Start the guide again</button>
+      <button type="button" id="btnAbout" class="menu">About the data</button>
+      <button type="button" id="btnNew" class="menu">Start over</button>
+    </div>
+    <div class="moreCol">
+      <h4>What is drawn</h4>
+      <div class="row"><label><input type="checkbox" id="layerLines"> Constellation lines</label></div>
+      <div class="row"><label><input type="checkbox" id="layerNames"> Constellation names</label></div>
+      <div class="row"><label><input type="checkbox" id="layerStarNames" checked> Star names</label></div>
+      <div class="row astronomer"><label><input type="checkbox" id="layerAltAz"> Altitude and azimuth grid</label></div>
+      <div class="row astronomer"><label><input type="checkbox" id="layerRaDec"> Right ascension and declination grid</label></div>
+      <h4>Who is looking</h4>
+      <div class="row"><label><input type="radio" name="mode" id="modeLittle" value="little"> Little: big stars, eight star pictures, read aloud</label></div>
+      <div class="row"><label><input type="radio" name="mode" id="modeExplorer" value="explorer" checked> Explorer: compass words and fists</label></div>
+      <div class="row"><label><input type="radio" name="mode" id="modeAstronomer" value="astronomer"> Astronomer: degrees, magnitudes, light-years, grids</label></div>
+    </div>
+  </div>
+  <form method="dialog"><button class="hdr">Close</button></form>
+</dialog>
+
+<dialog id="moonDialog">
+  <h3>The Moon</h3>
+  <div class="moonTop">
+    <canvas id="moonBig" width="180" height="180"></canvas>
+    <div>
+      <div class="big" id="moonName"></div>
+      <div id="moonPct" class="muted"></div>
+      <div id="moonTimes" class="muted"></div>
+      <div id="moonWhere" class="muted"></div>
+    </div>
+  </div>
+  <h4>This month</h4>
+  <canvas id="moonStrip" width="640" height="72"></canvas>
+  <div class="acts">
+    <button type="button" id="moonPrev" class="small">Day before</button>
+    <button type="button" id="moonNext" class="small">Day after</button>
+    <span id="moonMonthCount" class="muted"></span>
+  </div>
+  <h4>Log tonight's Moon</h4>
+  <p class="muted">Go outside and look first. Then pick the shape you saw.</p>
+  <div id="moonPick" class="moonPick"></div>
+  <p id="moonLogResult" class="muted"></p>
+  <ul id="moonLogList" class="plain"></ul>
+  <form method="dialog"><button class="hdr">Close</button></form>
+</dialog>
+
+<dialog id="planetsDialog">
+  <h3>Planets up tonight</h3>
+  <p class="muted" id="planetsIntro"></p>
+  <table id="planetList" class="list"></table>
+  <form method="dialog"><button class="hdr">Close</button></form>
+</dialog>
+
+<dialog id="darkDialog">
+  <h3>Dark sky</h3>
+  <p class="muted">Streetlights hide the faint stars. Slide from a big city to a dark park and watch them come back.</p>
+  <div class="row"><label for="darkSlider">How dark is your sky</label><input type="range" id="darkSlider" min="30" max="65" step="1"></div>
+  <div class="darkWords"><span>Big city</span><strong id="darkWord"></strong><span>Dark park</span></div>
+  <p id="darkCount" class="big"></p>
+  <div class="row"><label><input type="checkbox" id="darkCompare"> Compare side by side</label></div>
+  <div class="row"><label for="darkNote">What I noticed</label><textarea id="darkNote" rows="3" placeholder="What changed between the city and the park?"></textarea></div>
+  <form method="dialog"><button class="hdr">Close</button></form>
+</dialog>
+
+<dialog id="partyDialog">
+  <h3>Plan a star party</h3>
+  <p class="sentence">We will call it <label><span class="sr">Name of the star party</span><input type="text" id="partyTitle" placeholder="our star night"></label> and look on
+    <label><span class="sr">Date</span><input type="date" id="partyDate"></label> from <label><span class="sr">From</span><input type="time" id="partyFrom" step="900"></label> to <label><span class="sr">To</span><input type="time" id="partyTo" step="900"></label>
+    at <label><span class="sr">Where</span><input type="text" id="partyWhere" placeholder="the school field"></label>. Coming with us: <label><span class="sr">Who is coming</span><input type="text" id="partyWho" placeholder="a grown-up"></label>.</p>
+  <p id="partyWarn" class="warn" hidden></p>
+  <h4>What will be up</h4>
+  <ul id="partyUp" class="plain"></ul>
+  <h4>Our targets</h4>
+  <ul id="partyTargets" class="plain"></ul>
+  <h4>Bring</h4>
+  <div id="partyBring" class="bring"></div>
+  <form method="dialog"><button class="hdr">Close</button></form>
+</dialog>
+
+<dialog id="logDialog">
+  <h3>My observing log</h3>
+  <p class="muted">Lines you add after a real night outside. The app never writes one for you.</p>
+  <div class="row"><label for="logDate">Date</label><input type="date" id="logDate"></div>
+  <div class="row"><label for="logSaw">I saw</label><select id="logSaw"></select></div>
+  <div class="row"><label for="logSky">The sky was</label><select id="logSky"><option value="clear">clear</option><option value="some-clouds">partly cloudy</option><option value="hazy">hazy</option><option value="cloudy">cloudy, saw little</option></select></div>
+  <div class="row"><label for="logNote">Note</label><input type="text" id="logNote" maxlength="200" placeholder="What it looked like, who was there, what surprised you"></div>
+  <div class="acts"><button type="button" id="logAdd" class="primary">Add the line</button></div>
+  <ul id="logList" class="plain"></ul>
+  <form method="dialog"><button class="hdr">Close</button></form>
+</dialog>
+
+<dialog id="tourDialog">
+  <h3>My tour</h3>
+  <p class="muted">Step cards. Put them in order, press Play, and the sky follows them. Share the project and a friend can play your tour.</p>
+  <ol id="tourList" class="tourList"></ol>
+  <div class="tourAdd">
+    <label><span class="sr">What the step does</span><select id="tourDo">
+      <option value="face">Face</option>
+      <option value="time">Set time</option>
+      <option value="find">Find</option>
+      <option value="pointer">Draw the pointer line</option>
+      <option value="wait">Wait</option>
+      <option value="say">Say</option>
+    </select></label>
+    <label><span class="sr">What the step uses</span><select id="tourArg"></select></label>
+    <button type="button" id="tourAdd" class="small">Add the card</button>
+  </div>
+  <div class="acts">
+    <button type="button" id="tourPlay" class="primary">Play</button>
+    <button type="button" id="tourClear" class="small ghost">Clear</button>
+  </div>
+  <form method="dialog"><button class="hdr">Close</button></form>
+</dialog>
+
+<dialog id="numbersDialog">
+  <h3>Sky numbers</h3>
+  <p class="muted">Every number on the card, and the steps between them.</p>
+  <pre id="numbersBody" class="numbers"></pre>
+  <form method="dialog"><button class="hdr">Close</button></form>
+</dialog>
+
+<dialog id="chartDialog">
+  <h3>Sky chart</h3>
+  <p class="muted">The whole sky for this place, date and time. Hold it over your head with the edge marked N toward north.</p>
+  <canvas id="chartCanvas" width="720" height="780"></canvas>
+  <div class="acts"><button type="button" id="chartPrint" class="primary">Print</button></div>
+  <form method="dialog"><button class="hdr">Close</button></form>
+</dialog>
+
+<dialog id="aboutDialog">
+  <h3>About the data</h3>
+  <p>This app plans and teaches. Real observing happens outside, with your own eyes. The app does not know your weather, your trees or your streetlights, so it shows a typical sky for the darkness you pick, never a promise.</p>
+  <ul class="plain credits">
+    <li>Stars: the Yale Bright Star Catalog, 5th revised edition (Hoffleit and Warren 1991), from NASA's HEASARC.</li>
+    <li>Star names: the IAU Working Group on Star Names catalog (CC BY).</li>
+    <li>Distances: Hipparcos parallaxes, new reduction (van Leeuwen 2007), through VizieR at CDS Strasbourg.</li>
+    <li>Constellation figures: the Stellarium western sky culture (CC BY-SA).</li>
+    <li>Sun, Moon and planets: Astronomy Engine by Don Cross (MIT license).</li>
+    <li>Cities: GeoNames (CC BY 4.0). World outline: Natural Earth (public domain).</li>
+  </ul>
+  <p class="muted">Positions, phases and rise and set times are worked out at run time from those sources. Star sizes, the zoom factor and the city and park darkness levels are this app's own choices.</p>
+  <form method="dialog"><button class="hdr">Close</button></form>
+</dialog>
+
+<dialog id="newDialog">
+  <h3>Start over?</h3>
+  <p>Your found list, log, plan and tour in this project go away. Saved projects are not touched.</p>
+  <div class="acts"><button type="button" id="newYes" class="primary">Start over</button></div>
+  <form method="dialog"><button class="hdr">Keep it</button></form>
+</dialog>
+
+<div id="printArea" class="printArea" hidden></div>
+
+<script src="js/vendor/astronomy.browser.min.js?v=1"></script>
+<script src="js/menu-search.js?v=1"></script>
+<script src="js/menu-search-config.js?v=1"></script>
+<script type="module" src="js/app.mjs?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1532"/>
+      <stop offset="1" stop-color="#1b2a5e"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="url(#sky)"/>
+  <!-- the Big Dipper, pointers toward Polaris at the top -->
+  <g stroke="#ffd66e" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.9">
+    <polyline points="52,168 78,150 108,158 132,136 150,112 182,120 206,98"/>
+    <line x1="150" y1="112" x2="132" y2="136"/>
+  </g>
+  <g fill="#ffffff">
+    <circle cx="52" cy="168" r="5"/><circle cx="78" cy="150" r="5"/><circle cx="108" cy="158" r="5"/>
+    <circle cx="132" cy="136" r="5"/><circle cx="150" cy="112" r="5"/><circle cx="182" cy="120" r="5"/><circle cx="206" cy="98" r="5"/>
+    <circle cx="98" cy="40" r="7" fill="#ffd66e"/>
+    <circle cx="40" cy="72" r="2"/><circle cx="170" cy="56" r="2.5"/><circle cx="222" cy="150" r="2"/><circle cx="64" cy="110" r="2"/><circle cx="196" cy="34" r="2"/><circle cx="140" cy="86" r="1.8"/>
+  </g>
+  <line x1="132" y1="136" x2="98" y2="40" stroke="#ffd66e" stroke-width="2" stroke-dasharray="5 6" opacity="0.8"/>
+  <!-- ground -->
+  <path d="M0 208 Q 40 196 72 206 T 140 204 T 210 208 T 256 202 L 256 256 L 0 256 Z" fill="#0a1a12"/>
+</svg>
