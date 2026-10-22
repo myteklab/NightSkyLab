@@ -1,9 +1,9 @@
 // Every dialog: the place picker and map, the calendar, the Moon, planets, dark sky, the star
 // party plan, the observing log, the tour builder and the printable chart.
-import * as S from './sky.mjs?v=3';
-import { View, render, skyLimit } from './draw.mjs?v=3';
-import { esc, timeAt, dateWords, clock } from './words.mjs?v=3';
-import { drawPhase } from './moonface.mjs?v=3';
+import * as S from './sky.mjs?v=4';
+import { View, render, skyLimit } from './draw.mjs?v=4';
+import { esc, timeAt, dateWords, clock } from './words.mjs?v=4';
+import { drawPhase } from './moonface.mjs?v=4';
 
 export function initScreens(ctx) {
     const { $ } = ctx;
@@ -20,7 +20,7 @@ export function initScreens(ctx) {
     // ---- place ------------------------------------------------------------------------------
     let cities = null, land = null;
     const search = $('citySearch'), list = $('cityList');
-    async function loadCities() { if (!cities) cities = await import('./data/cities.mjs?v=3'); return cities; }
+    async function loadCities() { if (!cities) cities = await import('./data/cities.mjs?v=4'); return cities; }
     $('placeDialog').addEventListener('close', () => { search.value = ''; list.innerHTML = ''; });
     $('btnPlace').addEventListener('click', () => setTimeout(() => search.focus(), 50));
     search.addEventListener('input', async () => {
@@ -56,7 +56,7 @@ export function initScreens(ctx) {
     $('btnMap').addEventListener('click', async () => {
         $('mapWrap').hidden = !$('mapWrap').hidden;
         if ($('mapWrap').hidden) return;
-        if (!land) land = await import('./data/land.mjs?v=3');
+        if (!land) land = await import('./data/land.mjs?v=4');
         drawMap();
     });
     function drawMap(mark) {
@@ -135,9 +135,9 @@ export function initScreens(ctx) {
         $('moonWhere').textContent = m.alt > 0 ? `Up now: look ${S.compassWord(m.az)}, ${S.fistWords(m.alt)}.` : 'Under the horizon at this hour.';
         // the month strip: thirty days from the first of the month, today marked
         const sg = $('moonStrip').getContext('2d');
-        sg.clearRect(0, 0, 640, 72);
+        sg.clearRect(0, 0, 664, 72);
         const first = p().when.date.slice(0, 8) + '01';
-        for (let d = 0; d < 30; d++) {
+        for (let d = 0; d < 31; d++) {
             const ds = S.addDays(first, d);
             if (ds.slice(0, 7) !== first.slice(0, 7)) break;
             const mm = moonOf(S.localToDate(ds, '21:00', zone()));
@@ -151,7 +151,7 @@ export function initScreens(ctx) {
     }
     $('moonStrip').addEventListener('click', (e) => {
         const r = $('moonStrip').getBoundingClientRect();
-        const d = Math.floor((e.clientX - r.left) / r.width * 640 / 21);
+        const d = Math.floor((e.clientX - r.left) / r.width * 664 / 21);
         const first = p().when.date.slice(0, 8) + '01';
         const ds = S.addDays(first, d);
         if (ds.slice(0, 7) !== first.slice(0, 7)) return;

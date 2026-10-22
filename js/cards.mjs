@@ -1,8 +1,8 @@
 // What the card says about a star, a constellation, a planet, the Moon or the Sun. Positions,
 // rise and set times and phases are worked out here from the frame; the sentences that state a
 // fact are keyed to makerspace-v2/192-night-sky-lab-sources.md (the key is in the comment).
-import * as S from './sky.mjs?v=3';
-import { esc, timeAt, deg, hms, dms } from './words.mjs?v=3';
+import * as S from './sky.mjs?v=4';
+import { esc, timeAt, deg, hms, dms } from './words.mjs?v=4';
 
 // (c1..c20) one line each, read before shipping
 const STAR_LINES = {
@@ -19,7 +19,7 @@ const STAR_LINES = {
     alcor: 'The faint partner of Mizar in the Dipper’s handle. Seeing it was an old test of sharp eyes.',                               // c8
     dubhe: 'One of the two Pointers. A line from Merak through Dubhe runs to Polaris.',                                                     // c9
     merak: 'One of the two Pointers. A line from Merak through Dubhe runs to Polaris.',                                                     // c9
-    aldebaran: 'The red eye of the Bull, in front of the Pleiades cluster.',                                                                // c10
+    aldebaran: 'The bright eye of the Bull. It sits in front of the Hyades star cluster, with the Pleiades a little farther on.',          // c10
     capella: 'The bright yellow star of the Charioteer, high in winter evenings from the north.',                                           // c11
     acrux: 'The foot of the Southern Cross. The long axis of the Cross points toward the south pole of the sky.',                           // c12
     spica: 'Follow the arc of the Dipper’s handle to Arcturus, then keep going to Spica.',                                               // c7
@@ -35,7 +35,7 @@ const CON_LINES = {
     cyg: 'The Swan flies down the Milky Way. Its stars also make the Northern Cross.',                                                     // c18
     leo: 'A backwards question mark makes the Lion’s head and mane.',                                                                   // c14
     cru: 'The Southern Cross. Its long axis points toward the south pole of the sky, where there is no bright star.',                        // c12
-    tau: 'The Bull. The Pleiades cluster rides on its shoulder.',                                                                          // c10
+    tau: 'The Bull. Aldebaran is its eye, and the Pleiades cluster rides on its shoulder.',                                                // c10
     gem: 'The Twins, Castor and Pollux, side by side.',                                                                                    // c19
     boo: 'The Herdsman. Bright orange Arcturus is at the bottom of its kite shape.'                                                        // c7
 };
@@ -50,6 +50,7 @@ const BODY_LINES = {
 };
 
 const RANK_WORDS = ['brightest', 'second brightest', 'third brightest', 'fourth brightest', 'fifth brightest'];
+const an = (word) => (/^[aeiou]/.test(word) ? 'an ' : 'a ') + word;
 
 function whereWords(ctx, alt, az) {
     const p = ctx.project;
@@ -73,10 +74,10 @@ export function cardFor(ctx, hit) {
         const aa = S.horToAltAz(hor[0], hor[1], hor[2]);
         const parts = [];
         if (little) {
-            parts.push(`<p>This is ${esc(name)}. It is a ${color} star${con ? ' in ' + esc(con.name) : ''}.</p>`);
+            parts.push(`<p>This is ${esc(name)}. It is ${an(color)} star${con ? ' in ' + esc(con.name) : ''}.</p>`);
             if (STAR_LINES[id]) parts.push(`<p>${STAR_LINES[id]}</p>`);
         } else {
-            let first = `${esc(name)} is a ${color} star${con ? ' in ' + esc(con.name) + (con.english ? ', the ' + esc(con.english) : '') : ''}.`;
+            let first = `${esc(name)} is ${an(color)} star${con ? ' in ' + esc(con.name) + (con.english ? ', the ' + esc(con.english) : '') : ''}.`;
             if (i < 5) first += ` It is the ${RANK_WORDS[i]} star in the night sky.`;
             else if (i < 25) first += ` It is among the 25 brightest stars in the night sky.`;
             parts.push(`<p>${first}</p>`);

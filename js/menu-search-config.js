@@ -92,7 +92,7 @@
             { say: 'tour steps cards program play code glassbox', find: ['tourDialog'] },
             { say: 'print chart paper map of the sky printable', find: ['chartDialog'] },
             { say: 'where city place location map country', find: ['placeDialog', 'btnPlace'] },
-            { say: 'lines constellation lines figures pictures', find: ['layerLines'] },
+            { say: 'lines figures pictures', find: ['layerLines'] },
             { say: 'names labels', find: ['layerNames', 'layerStarNames'] },
             { say: 'grid coordinates altitude azimuth right ascension declination', find: ['layerAltAz', 'layerRaDec'] },
             { say: 'mode little kids young read aloud explorer astronomer advanced degrees', find: ['modeExplorer', 'modeLittle', 'modeAstronomer'] },

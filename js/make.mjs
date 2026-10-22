@@ -1,8 +1,8 @@
 // The making and measuring screens that came after the first minute: star colors, the Dipper
 // clock, My constellation (tap stars to join them), the year planet chart, the Moon calendar print.
-import * as S from './sky.mjs?v=3';
-import { esc, clock, dateWords } from './words.mjs?v=3';
-import { drawPhase } from './moonface.mjs?v=3';
+import * as S from './sky.mjs?v=4';
+import { esc, clock, dateWords } from './words.mjs?v=4';
+import { drawPhase } from './moonface.mjs?v=4';
 
 export function initMake(ctx) {
     const { $ } = ctx;

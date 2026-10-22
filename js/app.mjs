@@ -2,13 +2,13 @@
 // and its drags, the time strip, the found list. Screens live in screens.mjs, the first-minute
 // guide and the tour player in guide.mjs, card text in cards.mjs. The platform adapter talks
 // only to window.NightSky.
-import * as S from './sky.mjs?v=3';
-import { View, render, pick, skyLimit } from './draw.mjs?v=3';
-import { cardFor } from './cards.mjs?v=3';
-import { initGuide } from './guide.mjs?v=3';
-import { initScreens } from './screens.mjs?v=3';
-import { initMake } from './make.mjs?v=3';
-import { esc, clock } from './words.mjs?v=3';
+import * as S from './sky.mjs?v=4';
+import { View, render, pick, skyLimit } from './draw.mjs?v=4';
+import { cardFor } from './cards.mjs?v=4';
+import { initGuide } from './guide.mjs?v=4';
+import { initScreens } from './screens.mjs?v=4';
+import { initMake } from './make.mjs?v=4';
+import { esc, clock } from './words.mjs?v=4';
 
 S.useEngine(window.Astronomy);
 
@@ -159,9 +159,13 @@ function buildScene(limit) {
         if (little && !LITTLE_SET.includes(c.id)) continue;
         labels.push({ kind: 'con', id: c.id, hor: constellationHor(c), text: c.id === 'uma' && little ? 'Big Dipper' : c.name });
     }
-    for (const b of ctx.bodies) if (b.id !== 'sun' || b.alt > -1) labels.push({ kind: 'body', hor: b.hor, text: b.name, size: little ? 15 : 12 });
+    const skyLim = skyLimit(ctx.sunAlt);
+    for (const b of ctx.bodies) {
+        if (b.id === 'sun' ? b.alt <= -1 : (b.mag !== undefined && b.mag > skyLim)) continue;
+        labels.push({ kind: 'body', hor: b.hor, text: b.name, size: little ? 15 : 12 });
+    }
     if (L.has('starnames')) {
-        const thresh = little ? 0.6 : (mode === 'astronomer' ? 2.2 : 1.6) + Math.log2(ctx.view.zoom) * 1.2;
+        const thresh = Math.min(skyLim, little ? 0.6 : (mode === 'astronomer' ? 2.2 : 1.6) + Math.log2(ctx.view.zoom) * 1.2);
         for (let i = 0; i < S.N; i++) {
             if (S.MAG[i] > thresh) break;
             const name = S.NAMES[S.HR[i]];
@@ -372,10 +376,14 @@ function say(text) {
         // Safari goes silent when cancel() lands right before speak(), so only an ongoing one is cut
         if (speechSynthesis.speaking) speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'en-US';
         u.rate = 0.95;
-        const voices = speechSynthesis.getVoices();
-        const v = voices.find(x => /^en/i.test(x.lang) && x.default) || voices.find(x => /^en/i.test(x.lang));
-        if (v) u.voice = v;
+        // kept on the window: Safari drops an utterance the collector takes before it starts
+        window.__nightSkySpeech = u;
+        let started = false;
+        u.onstart = () => { started = true; };
+        setTimeout(() => { if (!started && ctx.toast) ctx.toast('This browser did not read it aloud. The words are on the card.'); }, 2500);
+        if (speechSynthesis.paused) speechSynthesis.resume();
         speechSynthesis.speak(u);
     };
     // Safari fills its voice list late; wait a moment for it, then speak either way

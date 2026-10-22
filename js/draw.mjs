@@ -2,7 +2,7 @@
 // only projects and paints. Stereographic around the view direction, so a constellation near
 // the edge keeps its shape. Canvas 2D on purpose: about three thousand dots and seven hundred
 // short lines is light work, and there is no GPU context to lose on a school Chromebook.
-import * as S from './sky.mjs?v=3';
+import * as S from './sky.mjs?v=4';
 
 const D2R = Math.PI / 180, R2D = 180 / Math.PI;
 const FOV1 = 100;          // degrees across the long side at zoom 1
@@ -348,7 +348,8 @@ function drawCompass(ctx, P, view, all) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     for (const [az, t] of marks) {
-        const v = S.altAzToHor(az, view.chart ? -3 : 0);
+        // on the chart the letters sit just inside the rim, so the paper's edge never cuts them
+        const v = S.altAzToHor(az, view.chart ? 5 : 0);
         const p = P(v[0], v[1], v[2]);
         // on the chart the horizon is the rim, 90 degrees from the center
         if (!p || p[2] < (view.chart ? -0.2 : 0.2)) continue;

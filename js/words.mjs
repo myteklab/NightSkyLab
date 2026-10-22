@@ -1,5 +1,5 @@
 // Small formatting helpers shared by the screens.
-import * as S from './sky.mjs?v=3';
+import * as S from './sky.mjs?v=4';
 
 export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 

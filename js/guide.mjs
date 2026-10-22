@@ -1,6 +1,6 @@
 // The first minute (find the Dipper, drag the pointers to Polaris, turn the night) and the
 // tour player, which is Glassbox rung 1: a list of step cards the sky follows.
-import * as S from './sky.mjs?v=3';
+import * as S from './sky.mjs?v=4';
 
 export function initGuide(ctx) {
     const { $ } = ctx;
@@ -218,16 +218,15 @@ export function initGuide(ctx) {
     }
     function turned() {
         if (step !== 'turn') return;
-        step = 'turned';
         ctx.addDid('turn-night');
-        show(south ? 'The sky turns around the pole because Earth turns.' : 'The sky turns around Polaris because Earth turns. Polaris sits almost over the North Pole.', 'Next', doors);
-        setTimeout(() => { if (step === 'turned') doors(); }, 4000);
+        doors(south ? 'The sky turns around the pole because Earth turns. Where next?' : 'The sky turns around Polaris because Earth turns. Where next?');
     }
-    function doors() {
+    // no Next button and no timer here: a late or doubled click used to land on whatever moved under it
+    function doors(msg) {
         step = 'doors';
         ctx.pointer = null;
         ctx.draw();
-        show('Where next?', null, null, [
+        show(msg || 'Where next?', null, null, [
             { label: 'Moon tonight', run: () => { hide(); $('btnMoon').click(); } },
             { label: 'Planets up tonight', run: () => { hide(); $('btnPlanets').click(); } },
             { label: 'Plan a star party', run: () => { hide(); $('btnParty').click(); } }
