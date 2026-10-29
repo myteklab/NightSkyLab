@@ -278,7 +278,10 @@
     function rank(kind) { return kind in KIND_RANK ? KIND_RANK[kind] : KIND_RANK.extra; }
 
     function search(q) {
-        var qw = words(q).filter(function (w) { return !STOP[w]; });
+        // keepWords: a word the STOP list drops that is a thing in this app
+        // ("change" is money handed back in Booth Lab, not "change the color").
+        var keep = (cfg && cfg.keepWords) || [];
+        var qw = words(q).filter(function (w) { return !STOP[w] || keep.indexOf(w) >= 0; });
         if (!qw.length) return [];
         var phrase = qw.join(' ');
         var out = [];
