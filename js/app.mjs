@@ -2,13 +2,14 @@
 // and its drags, the time strip, the found list. Screens live in screens.mjs, the first-minute
 // guide and the tour player in guide.mjs, card text in cards.mjs. The platform adapter talks
 // only to window.NightSky.
-import * as S from './sky.mjs?v=4';
-import { View, render, pick, skyLimit } from './draw.mjs?v=4';
-import { cardFor } from './cards.mjs?v=4';
-import { initGuide } from './guide.mjs?v=4';
-import { initScreens } from './screens.mjs?v=4';
-import { initMake } from './make.mjs?v=4';
-import { esc, clock } from './words.mjs?v=4';
+import * as S from './sky.mjs?v=5';
+import { View, render, pick, skyLimit } from './draw.mjs?v=5';
+import { cardFor } from './cards.mjs?v=5';
+import { initGuide } from './guide.mjs?v=5';
+import { initScreens } from './screens.mjs?v=5';
+import { initMake } from './make.mjs?v=5';
+import { esc, clock } from './words.mjs?v=5';
+import { readHandoff, writeHandoff, clearHandoff } from './handoff.mjs?v=5';
 
 S.useEngine(window.Astronomy);
 
@@ -487,7 +488,7 @@ function serializeProjectData() {
 function loadProjectData(data) {
     if (typeof data === 'string') { try { data = JSON.parse(data); } catch (e) { data = null; } }
     const fresh = blankProject();
-    if (!data || typeof data !== 'object' || !data.place) { applyProject(fresh); return; }
+    if (!data || typeof data !== 'object' || !data.place) { applyProject(fromMoonLab(fresh)); return; }
     // every key the shape knows, with the blank shape filling anything an older save lacks
     const p = { ...fresh, ...data };
     for (const k of ['view', 'darkSky', 'party', 'mine', 'programs', 'when']) p[k] = { ...fresh[k], ...(data[k] || {}) };
@@ -497,6 +498,18 @@ function loadProjectData(data) {
     if (!['little', 'explorer', 'astronomer'].includes(p.mode)) p.mode = 'explorer';
     p.v = 1;
     applyProject(p);
+}
+// Opened from Moon and Tides Lab's Tonight: its place and moment, then the Moon's card.
+// A new project only; a saved sky is never changed.
+function fromMoonLab(p) {
+    const h = readHandoff('moontideslab');
+    if (!h) return p;
+    const lp = S.localParts(new Date(h.ms), h.zone);
+    p.place = { name: h.name, country: '', lat: h.lat, lon: h.lon, zone: h.zone };
+    p.when = { date: lp.date, time: lp.time, now: false };
+    setTimeout(() => goTo('body', 'moon'), 800);
+    setTimeout(clearHandoff, 10000);
+    return p;
 }
 function applyProject(p) {
     ctx.project = p;
@@ -563,6 +576,12 @@ fit();
 initScreens(ctx);
 initMake(ctx);
 ctx.guide = initGuide(ctx);
-applyProject(blankProject());
+applyProject(fromMoonLab(blankProject()));
 ctx.guide.start();
+// the Moon card's "Why this shape?" link leaves this moment for Moon and Tides Lab
+document.addEventListener('click', (e) => {
+    if (!e.target.closest || !e.target.closest('a[data-moonlab]')) return;
+    const p = ctx.project.place;
+    writeHandoff('nightskylab', { ms: placeTime().getTime(), lat: p.lat, lon: p.lon, name: p.name, zone: p.zone });
+});
 window.dispatchEvent(new Event('nightskylab:ready'));

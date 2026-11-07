@@ -1,8 +1,9 @@
 // What the card says about a star, a constellation, a planet, the Moon or the Sun. Positions,
 // rise and set times and phases are worked out here from the frame; the sentences that state a
 // fact are keyed to makerspace-v2/192-night-sky-lab-sources.md (the key is in the comment).
-import * as S from './sky.mjs?v=4';
-import { esc, timeAt, deg, hms, dms } from './words.mjs?v=4';
+import * as S from './sky.mjs?v=5';
+import { esc, timeAt, deg, hms, dms } from './words.mjs?v=5';
+import { labUrl } from './handoff.mjs?v=5';
 
 // (c1..c20) one line each, read before shipping
 const STAR_LINES = {
@@ -142,6 +143,7 @@ export function cardFor(ctx, hit) {
         if (b.id === 'moon') {
             parts.push(`<p>${little ? 'This is the Moon.' : BODY_LINES.moon}</p>`);
             parts.push(`<p>Tonight it is a <strong>${S.PHASE_WORDS[b.phase].toLowerCase()}</strong>, ${Math.round(b.fraction * 100)} percent lit.</p>`);
+            if (!little) parts.push(`<p><a href="${esc(labUrl('moontideslab'))}" target="_blank" rel="noopener" data-moonlab>Why this shape?</a> Moon and Tides Lab shows where the Moon is on its path tonight.</p>`);
         } else {
             parts.push(`<p>${little ? 'This is ' + b.name + '. It is a planet, not a star.' : BODY_LINES[b.id]}</p>`);
             if (!little) parts.push(`<p>Planets shine with a steady light; stars twinkle more.</p>`);   // c27

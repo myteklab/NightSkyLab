@@ -1,9 +1,9 @@
 // Every dialog: the place picker and map, the calendar, the Moon, planets, dark sky, the star
 // party plan, the observing log, the tour builder and the printable chart.
-import * as S from './sky.mjs?v=4';
-import { View, render, skyLimit } from './draw.mjs?v=4';
-import { esc, timeAt, dateWords, clock } from './words.mjs?v=4';
-import { drawPhase } from './moonface.mjs?v=4';
+import * as S from './sky.mjs?v=5';
+import { View, render, skyLimit } from './draw.mjs?v=5';
+import { esc, timeAt, dateWords, clock } from './words.mjs?v=5';
+import { drawPhase } from './moonface.mjs?v=5';
 
 export function initScreens(ctx) {
     const { $ } = ctx;
@@ -20,7 +20,7 @@ export function initScreens(ctx) {
     // ---- place ------------------------------------------------------------------------------
     let cities = null, land = null;
     const search = $('citySearch'), list = $('cityList');
-    async function loadCities() { if (!cities) cities = await import('./data/cities.mjs?v=4'); return cities; }
+    async function loadCities() { if (!cities) cities = await import('./data/cities.mjs?v=5'); return cities; }
     $('placeDialog').addEventListener('close', () => { search.value = ''; list.innerHTML = ''; });
     $('btnPlace').addEventListener('click', () => setTimeout(() => search.focus(), 50));
     search.addEventListener('input', async () => {
@@ -56,7 +56,7 @@ export function initScreens(ctx) {
     $('btnMap').addEventListener('click', async () => {
         $('mapWrap').hidden = !$('mapWrap').hidden;
         if ($('mapWrap').hidden) return;
-        if (!land) land = await import('./data/land.mjs?v=4');
+        if (!land) land = await import('./data/land.mjs?v=5');
         drawMap();
     });
     function drawMap(mark) {
