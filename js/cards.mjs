@@ -1,9 +1,9 @@
 // What the card says about a star, a constellation, a planet, the Moon or the Sun. Positions,
 // rise and set times and phases are worked out here from the frame; the sentences that state a
 // fact are keyed to makerspace-v2/192-night-sky-lab-sources.md (the key is in the comment).
-import * as S from './sky.mjs?v=5';
-import { esc, timeAt, deg, hms, dms } from './words.mjs?v=5';
-import { labUrl } from './handoff.mjs?v=5';
+import * as S from './sky.mjs?v=6';
+import { esc, timeAt, deg, hms, dms } from './words.mjs?v=6';
+import { labUrl } from './handoff.mjs?v=6';
 
 // (c1..c20) one line each, read before shipping
 const STAR_LINES = {
@@ -138,6 +138,7 @@ export function cardFor(ctx, hit) {
             parts.push(`<p><strong>${BODY_LINES.sun}</strong></p>`);
             const rs = S.bodyRiseSet(p.place, p.when.date, 'sun');
             if (rs.set) parts.push(`<p>It sets about ${timeAt(rs.set, zone)} today${rs.rise ? ' and rises about ' + timeAt(rs.rise, zone) + ' tomorrow' : ''}. Dark enough for the faint stars comes about an hour and a half after sunset.</p>`);
+            if (!little) parts.push(`<p><a href="${esc(labUrl('sunseasonslab'))}" target="_blank" rel="noopener" data-seasonslab>Why is the day short in winter?</a> Sun and Seasons Lab shows the Sun's path and a stick's shadow through the year.</p>`);
             return { name: 'The Sun', kind: 'our star', html: parts.join(''), hor: b.hor, ringR: 0, found: null };
         }
         if (b.id === 'moon') {

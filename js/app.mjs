@@ -2,14 +2,14 @@
 // and its drags, the time strip, the found list. Screens live in screens.mjs, the first-minute
 // guide and the tour player in guide.mjs, card text in cards.mjs. The platform adapter talks
 // only to window.NightSky.
-import * as S from './sky.mjs?v=5';
-import { View, render, pick, skyLimit } from './draw.mjs?v=5';
-import { cardFor } from './cards.mjs?v=5';
-import { initGuide } from './guide.mjs?v=5';
-import { initScreens } from './screens.mjs?v=5';
-import { initMake } from './make.mjs?v=5';
-import { esc, clock } from './words.mjs?v=5';
-import { readHandoff, writeHandoff, clearHandoff } from './handoff.mjs?v=5';
+import * as S from './sky.mjs?v=6';
+import { View, render, pick, skyLimit } from './draw.mjs?v=6';
+import { cardFor } from './cards.mjs?v=6';
+import { initGuide } from './guide.mjs?v=6';
+import { initScreens } from './screens.mjs?v=6';
+import { initMake } from './make.mjs?v=6';
+import { esc, clock } from './words.mjs?v=6';
+import { readHandoff, writeHandoff, clearHandoff } from './handoff.mjs?v=6';
 
 S.useEngine(window.Astronomy);
 
