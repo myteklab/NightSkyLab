@@ -42,6 +42,15 @@
         return s || clean(el.textContent);
     }
 
+    // A <select>'s text is every option run together ("Middle schoolHigh school"),
+    // so it is named by its aria-label, its <label>, or its tooltip instead.
+    function controlName(el) {
+        if (el.tagName !== 'SELECT') return clean(el.textContent) || clean(el.title).replace(/\s*\([^)]*\)$/, '');
+        var lab = el.id && document.querySelector('label[for="' + el.id + '"]');
+        return clean(el.getAttribute('aria-label')) || (lab ? ownText(lab) : '') || clean(el.title).replace(/\s*\([^)]*\)$/, '') ||
+            (el.options[el.selectedIndex] ? clean(el.options[el.selectedIndex].text) : '');
+    }
+
     function words(s) {
         return String(s || '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').split(' ').filter(Boolean);
     }
@@ -159,7 +168,7 @@
                 // Not drawn at all (a Stop button outside a run, a tab page not open) is not offered.
                 if (hiddenWithin(btn, null) || !btn.getClientRects().length) return;
                 var lab = src.label ? btn.querySelector(src.label) : null;
-                var text = lab ? ownText(lab) : (clean(btn.textContent) || clean(btn.title).replace(/\s*\([^)]*\)$/, ''));
+                var text = lab ? ownText(lab) : controlName(btn);
                 add({
                     kind: 'menu', label: text, path: src.path || '',
                     controlId: btn.id || '',
